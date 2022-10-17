@@ -14,7 +14,7 @@ variables:
   feed: dl-light-etl
   tag-build: $(Build.SourceBranchName)
   ${{ if eq( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: dev${{ variables['Build.SourceBranchName'] }}
+    buildTag: dev${{ variables['Build.BuildNumber'] }}
   ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
     buildTag: ${{ variables['Build.SourceBranchName'] }}
 
