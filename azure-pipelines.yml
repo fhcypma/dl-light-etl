@@ -60,7 +60,7 @@ stages:
 #         summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
 
 - stage: Publish
-  dependsOn: Test
+  # dependsOn: Test
   jobs:
   - job: Publish
     displayName: "Build and publish"
