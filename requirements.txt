@@ -22,6 +22,8 @@ click==8.1.3
     # via
     #   black
     #   pip-tools
+coverage[toml]==6.5.0
+    # via pytest-cov
 findspark==2.0.1
     # via pytest-spark
 flake8==5.0.4
@@ -69,7 +71,10 @@ pyspark==3.2.1
 pytest==7.1.3
     # via
     #   -r requirements.in
+    #   pytest-cov
     #   pytest-spark
+pytest-cov==4.0.0
+    # via -r requirements.in
 pytest-spark==0.6.0
     # via -r requirements.in
 python-dateutil==2.8.2
@@ -84,6 +89,7 @@ tomli==2.0.1
     # via
     #   black
     #   build
+    #   coverage
     #   mypy
     #   pep517
     #   pytest
