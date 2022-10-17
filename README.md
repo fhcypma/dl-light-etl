@@ -1,5 +1,7 @@
 # Datalake-Light ETL
 
+[![Build Status](https://dev.azure.com/ypma-data/dl-light/_apis/build/status/fhcypma.dl-light-etl?branchName=main)](https://dev.azure.com/ypma-data/dl-light/_build/latest?definitionId=6&branchName=main)
+
 An ETL framework for spark-based Data Lake applications.
 The goal of the framework is to enable building spark applications with as little effort as possible.
 
