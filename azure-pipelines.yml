@@ -32,9 +32,9 @@ steps:
   displayName: 'Run lint tests'
 
 - script: |
-  python -m pip install black
-  black ./dl_light_etl --check
-displayName: 'Run lint tests'
+    python -m pip install black
+    black ./dl_light_etl --check
+  displayName: 'Code formatting check'
 
 - script: |
     pip install pytest pytest-azurepipelines
