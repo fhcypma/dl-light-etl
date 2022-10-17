@@ -7,7 +7,9 @@ from dl_light_etl.loaders import ParquetLoader
 from dl_light_etl.transformers import AddTechnicalFieldsTransformer, Transformers
 
 
-def test_simple_csv_to_parquet_spark_job(spark_session: SparkSession, rand_dir_path: Path):
+def test_simple_csv_to_parquet_spark_job(
+    spark_session: SparkSession, rand_dir_path: Path
+):
     # Given a csv file
     input_data = "col1,col2\nval1,val2"
     in_file_path = rand_dir_path / "input.csv"

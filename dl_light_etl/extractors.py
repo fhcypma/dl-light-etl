@@ -18,9 +18,9 @@ class Extractors:
     Will run in sequence during job execution, placing the resulting data objects in the provided keys
 
     :Example:
-    >>> Extractors() \  # doctest: +SKIP
-    >>> .add("world", world_extractor) \  # doctest: +SKIP
-    >>> .add("galaxy", galaxy_extractor)  # doctest: +SKIP
+      Extractors()
+      .add("world", world_extractor)
+      .add("galaxy", galaxy_extractor)
     """
 
     def __init__(self) -> None:
