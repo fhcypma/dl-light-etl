@@ -12,11 +12,10 @@ pool:
 variables:
   project: dl-light
   feed: dl-light-etl
-  tag-build: $(Build.SourceBranchName)
   ${{ if eq( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: dev${{ variables['Build.BuildNumber'] }}
+    buildTag: dev$(Build.BuildNumber)
   ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: ${{ variables['Build.BuildNumber'] }}
+    buildTag: $(Build.BuildNumber)
 
 stages:
 - stage: Test
