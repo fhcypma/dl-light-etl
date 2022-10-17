@@ -1,6 +1,6 @@
 [project]
 name = "dl_light_etl"
-version = "0.0.1.dev0"
+version = "0.0"
 authors = [
   { name="Frank Ypma", email="frank.ypma@ypma-data.nl" },
 ]
@@ -18,3 +18,7 @@ classifiers = [
 
 [tool.setuptools]
 packages = ["dl_light_etl"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

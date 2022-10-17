@@ -9,6 +9,10 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  project: dl-light
+  feed: dl-light-etl
+
 stages:
 - stage: Test
   jobs:
@@ -51,26 +55,28 @@ stages:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
 
-- stage: Build
+- stage: Publish
   dependsOn: Test
   jobs:
-  - job: Build
+  - job: Publish
+    displayName: "Build and publish"
     steps:
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '3.9'
       displayName: 'Use Python 3.9'
 
-    - script: make build
+    - script: |
+        make install
+        python -m build -C--global-option=egg_info -C--global-option=--tag-build=$(Build.BuildNumber) --wheel
       displayName: Build
-      
 
     - task: TwineAuthenticate@1
       displayName: Twine Authenticate
       inputs:
-        artifactFeed: dl-light/dl-light-etl
+        artifactFeed: $(project)/$(feed)
 
     - script: |
         python -m pip install twine
-        python -m twine upload -r dl-light-etl --config-file $(PYPIRC_PATH) dist/*.whl
+        python -m twine upload -r $(feed) --config-file $(PYPIRC_PATH) dist/*.whl
       displayName: Publish
