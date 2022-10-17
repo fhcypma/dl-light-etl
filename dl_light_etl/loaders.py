@@ -2,12 +2,9 @@ import logging
 from abc import abstractmethod
 from pathlib import Path
 from typing import Dict, List, Union
-from typeguard import check_type
-
-from pyspark.sql import DataFrame
 
 from dl_light_etl import DEFAULT_DATA_KEY
-from dl_light_etl.types import AnyDataType, JobParameters, StringRecords
+from dl_light_etl.types import AnyDataType, JobParameters
 from dl_light_etl.utils import filesystem
 
 
