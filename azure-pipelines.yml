@@ -9,15 +9,13 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-name: $(Date:yyyyMMdd)$(Rev:.r)
-
 variables:
   project: dl-light
   feed: dl-light-etl
   ${{ if eq( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: dev$(Build.BuildNumber)
+    buildTag: dev$(Date:yyyyMMdd)$(Rev:.r)
   ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: $(Build.BuildNumber)
+    buildTag: $(Date:yyyyMMdd)$(Rev:.r)
 
 stages:
 # - stage: Test
