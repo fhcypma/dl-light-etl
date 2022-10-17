@@ -46,6 +46,7 @@ stages:
         testRunTitle: "Python $(python.version)"
 
     - task: PublishCodeCoverageResults@1
+      displayName: "Publish Code Coverage Results"
       inputs:
         codeCoverageTool: Cobertura
         summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
