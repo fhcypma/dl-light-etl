@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 from pathlib import Path
 from typing import Dict, List, Union
+from typeguard import check_type
 
 from pyspark.sql import DataFrame
 
@@ -29,11 +30,8 @@ class TextFileLoader(AbstractLoader):
         logging.info(f"Starting {type(self)}")
         logging.info(f"Load data to {self.output_path}")
         lines = data[DEFAULT_DATA_KEY]
-        assert (
-            type(lines) == StringRecords
-        ), f"TextFileLoader expects type StringRecords, got {type(lines)}"
 
-        filesystem.write_text_file(path=self.output_path, content="\n".join(data))
+        filesystem.write_text_file(path=self.output_path, content="\n".join(lines))
         return parameters
 
 
@@ -59,9 +57,6 @@ class ParquetLoader(AbstractLoader):
         logging.info(f"Starting {type(self)}")
         logging.info(f"Loading data to {self.output_path}")
         df = data[DEFAULT_DATA_KEY]
-        assert (
-            type(df) == DataFrame
-        ), f"ParquetLoader expects type DataFrame, got {type(df)}"
 
         writer = df.write.mode(self.mode)
         if self.partition_by:
