@@ -36,3 +36,17 @@ steps:
   inputs:
     codeCoverageTool: Cobertura
     summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+
+- script: |
+    python -m build
+  displayName: Build
+
+- task: TwineAuthenticate@1
+  displayName: Twine Authenticate
+  inputs:
+    artifactFeed: dl-light/dl-light-etl
+
+- script: |
+    pip install twine
+    python -m twine upload -r dl-light-etl --config-file $(PYPIRC_PATH) dist/*.whl
+  displayName: Publish
