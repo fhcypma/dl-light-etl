@@ -1,0 +1,9 @@
+pyspark==3.2.1
+smart_open[s3]
+
+build
+pip-tools
+pytest
+pytest-spark
+black
+flake8

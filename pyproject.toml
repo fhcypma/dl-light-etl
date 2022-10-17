@@ -1,0 +1,17 @@
+[project]
+name = "dl_light_etl"
+version = "0.0.1"
+authors = [
+  { name="Frank Ypma", email="frank.ypma@ypma-data.nl" },
+]
+description = "ETL Framework for AWS datalake"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/fhcypma/dl-light-etl"
