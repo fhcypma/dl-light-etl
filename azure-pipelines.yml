@@ -9,6 +9,8 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
 variables:
   project: dl-light
   feed: dl-light-etl
