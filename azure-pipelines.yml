@@ -3,8 +3,7 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
-trigger:
-- main
+trigger: always
 
 pool:
   vmImage: ubuntu-latest
@@ -15,9 +14,9 @@ variables:
   project: dl-light
   feed: dl-light-etl
   ${{ if eq( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: dev
-  ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
     buildTag: ""
+  ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
+    buildTag: dev
 
 stages:
 # - stage: Test
