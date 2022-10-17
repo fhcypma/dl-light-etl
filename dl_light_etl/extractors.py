@@ -15,12 +15,12 @@ from dl_light_etl.utils import filesystem
 class Extractors:
     """Basically a dict wrapper for multiple extractors
 
-    Will run in sequence during job execution, placing the resulting data objects i nthe provided keys
+    Will run in sequence during job execution, placing the resulting data objects in the provided keys
 
     :Example:
-    >>> Extractors() \
-    >>> .add("world", world_extractor) \
-    >>> .add("galaxy", galaxy_extractor)
+    >>> Extractors() \  # doctest: +SKIP
+    >>> .add("world", world_extractor) \  # doctest: +SKIP
+    >>> .add("galaxy", galaxy_extractor)  # doctest: +SKIP
     """
 
     def __init__(self) -> None:

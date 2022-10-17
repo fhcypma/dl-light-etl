@@ -373,3 +373,6 @@ spark-warehouse/
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/python,spark,intellij+all,visualstudiocode
+
+# Ignore coverage report
+junit

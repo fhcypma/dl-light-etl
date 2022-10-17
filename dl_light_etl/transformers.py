@@ -40,9 +40,9 @@ class Transformers:
     Will run in sequence during job execution, placing the resulting data objects in the provided keys
 
     :Example:
-    >>> Transformers() \
-    >>> .add(TransformerAction("intermediate_df", DoSomethingTransformer())) \
-    >>> .add(TransformerAction("output_df", DoSomethingAdditionallyTransformer("intermediate_df")))
+    >>> Transformers() \  # doctest: +SKIP
+    >>> .add(TransformerAction("intermediate_df", DoSomethingTransformer())) \  # doctest: +SKIP
+    >>> .add(TransformerAction("output_df", DoSomethingAdditionallyTransformer("intermediate_df")))  # doctest: +SKIP
     """
 
     def __init__(self) -> None:
