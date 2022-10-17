@@ -30,7 +30,7 @@ steps:
     pip install pytest pytest-azurepipelines
     pip install pytest-cov
     pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
-  displayName: 'pytest'
+  displayName: 'Pytest'
 
 - task: PublishCodeCoverageResults@1
   inputs:
