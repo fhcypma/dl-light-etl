@@ -9,7 +9,7 @@ code: install
 	flake8 dl_light_etl
 	# mypy dl_light_etl
 
-build: clean
+build: clean install
 	python -m build
 
 clean:
