@@ -34,8 +34,12 @@ jmespath==1.0.1
     #   botocore
 mccabe==0.7.0
     # via flake8
+mypy==0.982
+    # via -r requirements.in
 mypy-extensions==0.4.3
-    # via black
+    # via
+    #   black
+    #   mypy
 packaging==21.3
     # via
     #   build
@@ -80,10 +84,13 @@ tomli==2.0.1
     # via
     #   black
     #   build
+    #   mypy
     #   pep517
     #   pytest
 typing-extensions==4.4.0
-    # via black
+    # via
+    #   black
+    #   mypy
 urllib3==1.26.12
     # via botocore
 wheel==0.37.1

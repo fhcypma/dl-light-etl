@@ -1,14 +1,18 @@
 install:
 	pip install -r requirements.txt
 
-test:
+test: install
 	pytest -vvv --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
 
-code:
-	black .
-	flake8
+code: install
+	black dl_light_etl --check
+	flake8 dl_light_etl
+	mypy dl_light_etl
 
-build:
-	python3 -m build
+build: clean
+	python -m build
 
-.PHONY: init test
+clean:
+	@rm -rf .pytest_cache/ .mypy_cache/ junit/ build/ dist/
+	@find . -not -path './.venv*' -path '*/__pycache__*' -delete
+	@find . -not -path './.venv*' -path '*/*.egg-info*' -delete

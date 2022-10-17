@@ -8,55 +8,68 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
-strategy:
-  matrix:
-    Python39:
-      python.version: '3.9'
-    Python310:
-      python.version: '3.10'
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+stages:
+- stage: Test
+  jobs:
+  - job: Test
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+    strategy:
+      matrix:
+        Python39:
+          python.version: '3.9'
+        Python310:
+          python.version: '3.10'
 
-- script: |
-    python -m pip install flake8
-    flake8 .
-  displayName: 'Run lint tests'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+      displayName: 'Use Python $(python.version)'
 
-- script: |
-    python -m pip install black
-    black ./dl_light_etl --check
-  displayName: 'Code formatting check'
+    - script: |
+        python -m pip install --upgrade pip
+        make install
+      displayName: 'Install dependencies'
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pip install pytest-cov
-    pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
-  displayName: 'Pytest'
+    - script: make code
+      displayName: 'Linting and code formatting check'
 
-- task: PublishCodeCoverageResults@1
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    - script: make test
+      displayName: Test
 
-- script: |
-    python -m build
-  displayName: Build
+    - task: PublishTestResults@2
+      displayName: "Publish Test Results junit/*"
+      condition: always()
+      inputs:
+        testResultsFiles: "junit/*"
+        testRunTitle: "Python $(python.version)"
 
-- task: TwineAuthenticate@1
-  displayName: Twine Authenticate
-  inputs:
-    artifactFeed: dl-light/dl-light-etl
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
 
-- script: |
-    python -m pip install twine
-    python -m twine upload -r dl-light-etl --config-file $(PYPIRC_PATH) dist/*.whl
-  displayName: Publish
+- stage: Build
+  dependsOn: Test
+  jobs:
+  - job: Build
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.9'
+      displayName: 'Use Python 3.9'
+
+    - script: make build
+      displayName: Build
+      
+
+    - task: TwineAuthenticate@1
+      displayName: Twine Authenticate
+      inputs:
+        artifactFeed: dl-light/dl-light-etl
+
+    - script: |
+        python -m pip install twine
+        python -m twine upload -r dl-light-etl --config-file $(PYPIRC_PATH) dist/*.whl
+      displayName: Publish
