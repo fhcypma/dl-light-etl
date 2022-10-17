@@ -7,7 +7,7 @@ test: install
 code: install
 	black dl_light_etl --check
 	flake8 dl_light_etl
-	mypy dl_light_etl
+	# mypy dl_light_etl
 
 build: clean
 	python -m build
