@@ -16,7 +16,7 @@ variables:
   ${{ if eq( variables['Build.SourceBranchName'], 'main' ) }}: 
     buildTag: dev${{ variables['Build.BuildNumber'] }}
   ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: ${{ variables['Build.SourceBranchName'] }}
+    buildTag: ${{ variables['Build.BuildNumber'] }}
 
 stages:
 - stage: Test
