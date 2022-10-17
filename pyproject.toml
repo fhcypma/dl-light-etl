@@ -15,3 +15,6 @@ classifiers = [
 
 [project.urls]
 "Homepage" = "https://github.com/fhcypma/dl-light-etl"
+
+[tool.setuptools]
+packages = ["dl_light_etl"]
