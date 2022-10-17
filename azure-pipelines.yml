@@ -27,6 +27,16 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
+    python -m pip install flake8
+    flake8 .
+  displayName: 'Run lint tests'
+
+- script: |
+  python -m pip install black
+  black ./dl_light_etl --check
+displayName: 'Run lint tests'
+
+- script: |
     pip install pytest pytest-azurepipelines
     pip install pytest-cov
     pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
@@ -47,6 +57,6 @@ steps:
     artifactFeed: dl-light/dl-light-etl
 
 - script: |
-    pip install twine
+    python -m pip install twine
     python -m twine upload -r dl-light-etl --config-file $(PYPIRC_PATH) dist/*.whl
   displayName: Publish
