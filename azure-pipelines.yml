@@ -6,15 +6,9 @@
 pool:
   vmImage: ubuntu-latest
 
-name: $(Date:yyyyMMdd)$(Rev:r)
-
 variables:
   project: dl-light
   feed: dl-light-etl
-  ${{ if eq( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: ""
-  ${{ if ne( variables['Build.SourceBranchName'], 'main' ) }}: 
-    buildTag: dev
 
 stages:
 # - stage: Test
@@ -71,8 +65,16 @@ stages:
 
     - script: |
         make install
-        python -m build -C--global-option=egg_info -C--global-option=--tag-build=$(buildTag)$(Build.BuildNumber) --wheel
-      displayName: Build
+        tag="dev${$(Build.BuildNumber)//./}"
+        python -m build -C--global-option=egg_info -C--global-option=--tag-build=${tag} --wheel
+      displayName: Build pre-release
+      condition: ne(variables['Build.SourceBranchName'], 'main' ))
+
+    - script: |
+        make install
+        python -m build --wheel
+      displayName: Build release
+      condition: eq(variables['Build.SourceBranchName'], 'main' ))
 
     - task: TwineAuthenticate@1
       displayName: Twine Authenticate
