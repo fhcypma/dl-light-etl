@@ -68,13 +68,13 @@ stages:
         tag="dev${$(Build.BuildNumber)//./}"
         python -m build -C--global-option=egg_info -C--global-option=--tag-build=${tag} --wheel
       displayName: Build pre-release
-      condition: ne(variables['Build.SourceBranchName'], 'main' ))
+      condition: ne(variables['Build.SourceBranchName'], 'main' )
 
     - script: |
         make install
         python -m build --wheel
       displayName: Build release
-      condition: eq(variables['Build.SourceBranchName'], 'main' ))
+      condition: eq(variables['Build.SourceBranchName'], 'main' )
 
     - task: TwineAuthenticate@1
       displayName: Twine Authenticate
