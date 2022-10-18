@@ -65,8 +65,10 @@ stages:
 
     - script: |
         make install
-        tag="dev${$(Build.BuildNumber)//./}"
-        python -m build -C--global-option=egg_info -C--global-option=--tag-build=${tag} --wheel
+        build="$(Build.BuildNumber)"
+        tag="dev${build//./}"
+        echo "$tag"
+        python -m build -C--build-option=egg_info -C--build-option=--tag-build=${tag} --wheel
       displayName: Build pre-release
       condition: ne(variables['Build.SourceBranchName'], 'main' )
 
