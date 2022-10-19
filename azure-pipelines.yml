@@ -30,6 +30,7 @@ stages:
 
 #     - script: |
 #         python -m pip install --upgrade pip
+#         python -m pip install pipenv
 #         make install
 #       displayName: 'Install dependencies'
 
@@ -64,7 +65,11 @@ stages:
       displayName: 'Use Python 3.9'
 
     - script: |
-        make install
+        python -m pip install pipenv
+        python -m pipenv install
+      displayName: "Install dependencies"
+
+    - script: |
         build="$(Build.BuildNumber)"
         tag="dev${build//./}"
         echo "$tag"
@@ -73,7 +78,6 @@ stages:
       condition: ne(variables['Build.SourceBranchName'], 'main' )
 
     - script: |
-        make install
         python -m build --wheel
       displayName: Build release
       condition: eq(variables['Build.SourceBranchName'], 'main' )
