@@ -1,5 +1,6 @@
 install:
-	pip install -r requirements.txt
+	pipenv install -d
+	pipenv shell || echo "Continuing"
 
 test: install
 	pytest -vvv --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml
