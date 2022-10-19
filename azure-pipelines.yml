@@ -29,9 +29,7 @@ stages:
 #       displayName: 'Use Python $(python.version)'
 
 #     - script: |
-#         python -m pip install --upgrade pip
-#         python -m pip install pipenv
-#         make install
+#         make install-ci
 #       displayName: 'Install dependencies'
 
 #     - script: make code
@@ -65,9 +63,7 @@ stages:
       displayName: 'Use Python 3.9'
 
     - script: |
-        python -m pip install pipenv
-        python -m pipenv install
-        python -m pipenv shell
+        make install-ci
       displayName: "Install dependencies"
 
     - script: |
