@@ -4,8 +4,13 @@ install:
 
 install-ci:
 	python -m pip install pipenv
-	python -m pipenv lock -r > requirements.txt
+	python -m pipenv requirements > requirements.txt
 	python -m pip install -r requirements.txt
+
+install-ci-dev:
+	python -m pip install pipenv
+	python -m pipenv requirements --dev > requirements-dev.txt
+	python -m pip install -r requirements-dev.txt
 
 test:
 	pytest -vvv --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml

@@ -29,7 +29,7 @@ stages:
 #       displayName: 'Use Python $(python.version)'
 
 #     - script: |
-#         make install-ci
+#         make install-ci-dev
 #       displayName: 'Install dependencies'
 
 #     - script: make code
