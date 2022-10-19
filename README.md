@@ -11,7 +11,6 @@ This framework is to be tied together with a workflow scheduling and an infrastr
 
 ## Roadmap
 
-* Create Azure Devops ci pipeline for publishing
 * Build higher level components, like jobs
 * Add pandas dataframe support
 
