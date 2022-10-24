@@ -22,7 +22,7 @@ code:
 
 # Just for local build
 build: clean
-	python -m build -C--global-option=egg_info -C--global-option=--tag-build=dev12345.0 --wheel
+	python -m build -C--global-option=egg_info -C--global-option=--tag-build=dev0 --wheel
 
 clean:
 	@rm -rf .pytest_cache/ .mypy_cache/ junit/ build/ dist/
