@@ -1,6 +1,6 @@
 [project]
 name = "dl_light_etl"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Frank Ypma", email="frank.ypma@ypma-data.nl" },
 ]
@@ -17,7 +17,7 @@ classifiers = [
 "Homepage" = "https://github.com/fhcypma/dl-light-etl"
 
 [tool.setuptools]
-packages = ["dl_light_etl"]
+packages = ["dl_light_etl", "dl_light_etl.utils"]
 
 [build-system]
 requires = ["setuptools"]
