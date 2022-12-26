@@ -6,10 +6,9 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
+from dl_light_etl import DEFAULT_DATA_KEY
 from dl_light_etl.errors import DataException
 from dl_light_etl.types import AnyDataType, JobParameters
-
-DEFAULT_KEY = "default_data_oject"
 
 JOB_START_TIME = "job_start_time"
 JOB_LAST_LOGGED_TIME = "job_last_logged_time"
@@ -80,7 +79,7 @@ class LogDataAction(AbstractAction):
     """Used for debugging purposes. Prints the contents"""
 
     def __init__(self, *, key: str = None, **print_params) -> None:
-        self.key = key if key else DEFAULT_KEY
+        self.key = key if key else DEFAULT_DATA_KEY
         self.print_params = print_params
 
     def execute(
@@ -115,7 +114,7 @@ class SimpleDataValidationAction(DoNothingAction):
     """Validate one of the data objets"""
 
     def __init__(self, *, key: str, validation_fct: FunctionType) -> None:
-        self.key = key if key else DEFAULT_KEY
+        self.key = key if key else DEFAULT_DATA_KEY
         self.validation_fct = validation_fct
 
     def execute(
@@ -128,7 +127,7 @@ class SimpleDataValidationAction(DoNothingAction):
 
 class RecordCountValidationAction(SimpleDataValidationAction):
     def __init__(self, *, key: str, expected_count: int) -> None:
-        self.key = key if key else DEFAULT_KEY
+        self.key = key if key else DEFAULT_DATA_KEY
 
         def validate_input_data(
             self, data: AnyDataType, parameters: JobParameters
