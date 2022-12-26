@@ -118,14 +118,12 @@ class TextFileExtractor(AbstractExtractor):
 class DataFrameExtractor(AbstractExtractor):
     def __init__(
         self,
-        spark: SparkSession,
         input_path: Union[Path, str],
         format: str,
         schema: StructType = None,
         **options,
     ) -> None:
         super().__init__()
-        self.spark = spark
         self.input_path = (
             input_path if type(input_path) == str else str(input_path.resolve())
         )
@@ -136,7 +134,8 @@ class DataFrameExtractor(AbstractExtractor):
     def extract(self, parameters: JobParameters) -> Tuple[JobParameters, DataFrame]:
         logging.info(f"Starting {type(self)}")
         logging.info(f"Extracting text from {self.input_path}")
-        df = self.spark.read.load(
+        spark = SparkSession.getActiveSession()
+        df = spark.read.load(
             path=self.input_path.replace("s3:", "s3a:"),
             format=self.format,
             schema=self.schema,
@@ -148,22 +147,20 @@ class DataFrameExtractor(AbstractExtractor):
 class TextExtractor(DataFrameExtractor):
     def __init__(
         self,
-        spark: SparkSession,
         input_path: Union[Path, str],
         schema: StructType = None,
         **options,
     ) -> None:
         options = options if options else {}
-        super().__init__(spark, input_path, format="text", schema=schema, **options)
+        super().__init__(input_path, format="text", schema=schema, **options)
 
 
 class CsvExtractor(DataFrameExtractor):
     def __init__(
         self,
-        spark: SparkSession,
         input_path: Union[Path, str],
         schema: StructType = None,
         **options,
     ) -> None:
         options = options if options else {}
-        super().__init__(spark, input_path, format="csv", schema=schema, **options)
+        super().__init__(input_path, format="csv", schema=schema, **options)

@@ -65,7 +65,7 @@ def test_text_extractor(spark_session, rand_path: Path):
     input_data = ["line1", "line2"]
     rand_path.write_text("\n".join(input_data))
     # When the file is read
-    extractor = TextExtractor(spark_session, rand_path, schema=schema)
+    extractor = TextExtractor(input_path=rand_path, schema=schema)
     output_parameters, output_data = extractor.extract(parameters={})
     # Then the data should match the input data
     assert output_data.collect() == [Row(line=line) for line in input_data]
@@ -84,7 +84,7 @@ def test_csv_extractor(spark_session, rand_path: Path):
     input_lines = ["|".join(line) for line in input_data]
     rand_path.write_text("\n".join(input_lines))
     # When the file is read
-    extractor = CsvExtractor(spark_session, rand_path, schema=schema, sep=sep)
+    extractor = CsvExtractor(input_path=rand_path, schema=schema, sep=sep)
     output_parameters, output_data = extractor.extract(parameters={})
     # Then the data should match the input data
     assert output_data.collect() == [
