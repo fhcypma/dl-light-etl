@@ -7,7 +7,7 @@ name = "pypi"
 "smart_open[s3]" = "*"
 
 [dev-packages]
-pyspark = "==3.2.1"
+pyspark = "==3.3.1"
 
 build = "*"
 pytest = "*"
