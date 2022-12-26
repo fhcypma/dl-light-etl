@@ -4,8 +4,9 @@ import random
 from pytest import LogCaptureFixture
 from pyspark.sql import SparkSession
 
+from dl_light_etl import DEFAULT_DATA_KEY
+
 from dl_light_etl.actions import (
-    DEFAULT_KEY,
     JOB_DURATION,
     JOB_LAST_LOGGED_TIME,
     JOB_START_TIME,
@@ -61,7 +62,7 @@ def test_log_data_action_string(caplog: LogCaptureFixture):
     # When the data is logged
     action = LogDataAction()
     with caplog.at_level(logging.INFO):
-        action.execute(parameters={}, data={DEFAULT_KEY: input_data})
+        action.execute(parameters={}, data={DEFAULT_DATA_KEY: input_data})
     # Then the data should be in the logs
     for line in input_data:
         assert line in caplog.text
@@ -73,7 +74,7 @@ def test_log_data_action_string_limited_output(caplog: LogCaptureFixture):
     # When the data is logged
     action = LogDataAction(n=1)
     with caplog.at_level(logging.INFO):
-        action.execute(parameters={}, data={DEFAULT_KEY: input_data})
+        action.execute(parameters={}, data={DEFAULT_DATA_KEY: input_data})
     # Then the data should be in the logs
     assert input_data[0] in caplog.text
     assert not input_data[1] in caplog.text
@@ -87,7 +88,7 @@ def test_log_data_action_dataframe(
     # When the data is logged
     action = LogDataAction()
     with caplog.at_level(logging.INFO):
-        action.execute(parameters={}, data={DEFAULT_KEY: input_data})
+        action.execute(parameters={}, data={DEFAULT_DATA_KEY: input_data})
     # Then the data should be in the logs
     print("logs:")
     print(caplog.text)
