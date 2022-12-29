@@ -20,3 +20,14 @@ This framework is to be tied together with a workflow scheduling and an infrastr
 * Run tests with `make test`
 * Check code with `make code`
 * Build with `make buid`
+
+### Auto-fix imports in VSCode
+
+In user settings:
+
+```json
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+        "source.unusedImports": true
+    }
+```
