@@ -35,12 +35,10 @@ def test_simple_csv_to_parquet_spark_job(
         actions=[
             JobStartTimeGetter(),
             CsvExtractor(
-                spark=spark_session,
                 input_path=in_file_path1,
                 header="true",
             ).with_output_key("data"),
             CsvExtractor(
-                spark=spark_session,
                 input_path=in_file_path2,
                 header="true",
             ).with_output_key("lookup"),
