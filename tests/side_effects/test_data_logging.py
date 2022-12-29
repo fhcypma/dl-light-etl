@@ -1,10 +1,11 @@
 import logging
-from pytest import LogCaptureFixture
-from pyspark.sql import SparkSession
 
-from dl_light_etl.etl_constructs import EtlContext, DEFAULT_DATA_KEY
-from dl_light_etl.types import StringRecords
+from pyspark.sql import SparkSession
+from pytest import LogCaptureFixture
+
+from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlContext
 from dl_light_etl.side_effects.data_logging import LogDataSideEffect
+from dl_light_etl.types import StringRecords
 
 
 def test_log_data_action_string(caplog: LogCaptureFixture):

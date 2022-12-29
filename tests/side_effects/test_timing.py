@@ -1,11 +1,9 @@
 import datetime
-import logging
 
-from dl_light_etl.etl_constructs import EtlContext
 from dl_light_etl.side_effects.timing import (
     JOB_START_TIME,
+    JobStartTimeGetter,
     LogDurationSideEffect,
-    JobStartTimeGetter
 )
 
 

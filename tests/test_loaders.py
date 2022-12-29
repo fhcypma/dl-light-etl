@@ -2,9 +2,8 @@ from pathlib import Path
 
 from pyspark.sql import Row, SparkSession
 
-from dl_light_etl.types import StringRecords
-from dl_light_etl.etl_constructs import EtlContext, DEFAULT_DATA_KEY
 from dl_light_etl.loaders import ParquetLoader, TextFileLoader
+from dl_light_etl.types import StringRecords
 
 
 def test_text_file_loader(rand_path: Path):

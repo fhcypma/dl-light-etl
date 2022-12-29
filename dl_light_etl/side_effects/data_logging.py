@@ -3,14 +3,14 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-from dl_light_etl.types import AnyDataType
-from dl_light_etl.side_effects.abstract import AbstractSideEffect
 from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY
+from dl_light_etl.side_effects.abstract import AbstractSideEffect
+from dl_light_etl.types import AnyDataType
 
 
 class LogDataSideEffect(AbstractSideEffect):
     """Prints the contents of a given data_object
-    
+
     Used for debugging purposes
     """
 
@@ -28,8 +28,8 @@ class LogDataSideEffect(AbstractSideEffect):
             logging.info(data._jdf.showString(self.n, self.truncate, self.vertical))
         elif type(data) == list:
             data: List[str] = data
-            for line in data[:self.n]:
-                logging.info(line[:self.truncate])
+            for line in data[: self.n]:
+                logging.info(line[: self.truncate])
         else:
             raise NotImplementedError(
                 f"{type(self)} not implemented for data type {type(data)}"

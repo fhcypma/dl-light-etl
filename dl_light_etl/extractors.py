@@ -1,15 +1,15 @@
 import logging
+from abc import abstractmethod
 from pathlib import Path
 from types import FunctionType
-from typing import Union, List
-from abc import abstractmethod
+from typing import List, Union
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
 
-from dl_light_etl.types import AnyDataType, StringRecords, EtlContext
+from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlAction
+from dl_light_etl.types import AnyDataType, StringRecords
 from dl_light_etl.utils import filesystem
-from dl_light_etl.etl_constructs import EtlAction, DEFAULT_DATA_KEY
 
 
 class AbstractExtractor(EtlAction):
@@ -51,7 +51,7 @@ class FunctionExtractor(AbstractExtractor):
 
 class TextFileExtractor(AbstractExtractor):
     """Extractor that reads in a single file to lines of strings
-    
+
     Does not use spark
 
     :param Union[Path, str] input_path: Path to the file

@@ -1,5 +1,8 @@
 from pathlib import Path
 
+from pyspark.sql import SparkSession, Row
+from pyspark.sql.types import StringType, StructField, StructType
+
 from dl_light_etl.etl_constructs import EtlContext
 from dl_light_etl.extractors import (
     CsvExtractor,
@@ -8,14 +11,13 @@ from dl_light_etl.extractors import (
     TextFileExtractor,
 )
 from dl_light_etl.types import StringRecords
-from pyspark.sql import Row, SparkSession
-from pyspark.sql.types import StringType, StructField, StructType
 
 
 def test_simple_function_extractor():
     # Given a function that returns a string
     def greet(addressee: str) -> StringRecords:
         return ["hello", addressee]
+
     # And a context
     # When the function is wrapped in an extractor and the data is extracted
     extractor = FunctionExtractor(greet, addressee="world")

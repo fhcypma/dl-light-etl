@@ -1,10 +1,9 @@
 import logging
-from typing import List, Optional, Union, Dict, Any
-from datetime import date, datetime
-from dataclasses import dataclass, field
 from abc import abstractmethod
+from datetime import date, datetime
+from typing import Any, Dict, List
 
-from dl_light_etl.types import AnyDataType, DateOrDatetime, EtlContext
+from dl_light_etl.types import DateOrDatetime, EtlContext
 from dl_light_etl.utils.functional import fold_left
 
 DEFAULT_DATA_KEY = "final_df"
@@ -15,7 +14,7 @@ PROTECTED_KEYS = [RUN_DATE_KEY, RUN_TIME_KEY]
 
 class EtlAction:
     """Abstract class for an action
-    
+
     Implemented by either:
     - Extractor: read data
     - Transformer: apply transformation
@@ -23,6 +22,7 @@ class EtlAction:
     - ValueGetter: get some value (to store in the etl_context.variables)
     - Side-effect: side-effect (e.g., log actions)
     """
+
     def __init__(self) -> None:
         # Each implementation of this class should set own values for the following vars:
         # For selecting the correct input parameters from the context
@@ -58,10 +58,7 @@ class EtlAction:
 
 class EtlJob:
     def __init__(
-        self,
-        *,
-        run_date_or_time: DateOrDatetime,
-        actions: List[EtlAction]
+        self, *, run_date_or_time: DateOrDatetime, actions: List[EtlAction]
     ) -> None:
         self.context: EtlContext = {}
         if type(run_date_or_time) == date:
@@ -80,5 +77,9 @@ class EtlJob:
 
     def execute(self) -> None:
         logging.info("Starting job")
-        fold_left(iterator=self.actions, accumulator=self.context, operator=self._execute_action)
+        fold_left(
+            iterator=self.actions,
+            accumulator=self.context,
+            operator=self._execute_action,
+        )
         logging.info("Job completed")

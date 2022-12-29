@@ -1,18 +1,25 @@
-from pathlib import Path
-from pytest import LogCaptureFixture
-from pyspark.sql import SparkSession, Row
-from datetime import date
 import logging
+from datetime import date
+from pathlib import Path
 
-from dl_light_etl.extractors import CsvExtractor
+from pyspark.sql import Row, SparkSession
+from pytest import LogCaptureFixture
+
 from dl_light_etl.etl_constructs import EtlJob
+from dl_light_etl.extractors import CsvExtractor
 from dl_light_etl.loaders import ParquetLoader
+from dl_light_etl.side_effects.timing import (
+    JOB_START_TIME,
+    JobStartTimeGetter,
+    LogDurationSideEffect,
+)
 from dl_light_etl.transformers import AddTechnicalFieldsTransformer, JoinTransformer
-from dl_light_etl.side_effects.timing import JobStartTimeGetter, LogDurationSideEffect, JOB_START_TIME
 
 
 def test_simple_csv_to_parquet_spark_job(
-    caplog: LogCaptureFixture, spark_session: SparkSession, rand_dir_path: Path, 
+    caplog: LogCaptureFixture,
+    spark_session: SparkSession,
+    rand_dir_path: Path,
 ):
     # Given two csv files
     input_data1 = "id,val\n1,a"
@@ -31,27 +38,22 @@ def test_simple_csv_to_parquet_spark_job(
                 spark=spark_session,
                 input_path=in_file_path1,
                 header="true",
-            )
-            .with_output_key("data"),
+            ).with_output_key("data"),
             CsvExtractor(
                 spark=spark_session,
                 input_path=in_file_path2,
                 header="true",
-            )
-            .with_output_key("lookup"),
+            ).with_output_key("lookup"),
             AddTechnicalFieldsTransformer()
             .with_input_keys("data", JOB_START_TIME)
             .with_output_key("data_enriched"),
-            JoinTransformer(
-                on="id"
-            )
-            .with_input_keys("data_enriched", "lookup"),
+            JoinTransformer(on="id").with_input_keys("data_enriched", "lookup"),
             ParquetLoader(
                 mode="overwrite",
                 output_path=out_dir_path,
             ),
             LogDurationSideEffect(),
-        ]
+        ],
     )
     # When the job is executed
     with caplog.at_level(logging.INFO):
@@ -70,7 +72,17 @@ def test_simple_csv_to_parquet_spark_job(
         "name",
     ]
     assert actual_df.drop("dl_ingestion_time").collect() == [
-        Row(id="1", val="a", dl_input_file_name="file://" + str(in_file_path1), name="A")
+        Row(
+            id="1", val="a", dl_input_file_name="file://" + str(in_file_path1), name="A"
+        )
     ]
-    print(caplog)
-    assert 1 == 0
+    # And the logs should show the execution flow
+    assert "Starting job" in caplog.text
+    assert (
+        "Starting action <class 'dl_light_etl.side_effects.timing.JobStartTimeGetter'>"
+        in caplog.text
+    )
+    assert (
+        "Starting action <class 'dl_light_etl.extractors.CsvExtractor'>" in caplog.text
+    )
+    # Not checking all the others...

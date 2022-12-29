@@ -4,8 +4,8 @@ from types import FunctionType
 from pyspark.sql import DataFrame
 
 from dl_light_etl.errors import DataException
-from dl_light_etl.types import AnyDataType
 from dl_light_etl.side_effects.abstract import AbstractSideEffect
+from dl_light_etl.types import AnyDataType
 
 
 class SimpleDataValidationSideEffect(AbstractSideEffect):
@@ -20,7 +20,6 @@ class SimpleDataValidationSideEffect(AbstractSideEffect):
 
 class RecordCountValidationAction(SimpleDataValidationSideEffect):
     def __init__(self, expected_count: int) -> None:
-
         def validate_input_data(self, data_object: AnyDataType) -> None:
             """Validate data on having n_lines hours"""
             logging.info(f"Starting {type(self)}")

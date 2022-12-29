@@ -1,12 +1,13 @@
 from datetime import datetime
 
+from pyspark.sql import Row, SparkSession
+
+from dl_light_etl.etl_constructs import RUN_DATE_KEY, RUN_TIME_KEY
 from dl_light_etl.transformers import (
     AddRunDateOrTimeTransformer,
     AddTechnicalFieldsTransformer,
     JoinTransformer,
 )
-from dl_light_etl.etl_constructs import RUN_DATE_KEY, RUN_TIME_KEY
-from pyspark.sql import SparkSession, Row
 
 
 def test_add_technical_fields_transformer(spark_session: SparkSession):

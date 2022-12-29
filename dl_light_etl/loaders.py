@@ -1,24 +1,23 @@
 import logging
+from abc import abstractmethod
 from pathlib import Path
 from typing import List, Union
-from abc import abstractmethod
 
 from pyspark.sql import DataFrame
 
-from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlContext, EtlAction
-from dl_light_etl.utils import filesystem
+from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlAction
 from dl_light_etl.types import StringRecords
+from dl_light_etl.utils import filesystem
 
 
 class AbstractLoader(EtlAction):
     """Abstract class for saving a data object"""
-    
+
     def __init__(self) -> None:
         super().__init__()
         self._has_output = False
         self._input_keys: List[str] = [DEFAULT_DATA_KEY]
         self._output_key = None
-
 
     @abstractmethod
     def execute(self, **kwargs) -> None:

@@ -10,13 +10,12 @@ class AbstractSideEffect(EtlAction):
     Does not alter the etl context
     Intended for log actions, etc.
     """
-    
+
     def __init__(self) -> None:
         super().__init__()
         self._input_keys: List[str] = []
         self._output_key = None
         self._has_output = False
-
 
     @abstractmethod
     def execute(self, **kwargs) -> None:
@@ -25,7 +24,7 @@ class AbstractSideEffect(EtlAction):
 
 class AbstractValueGetter(EtlAction):
     """Abstract class for producing some value"""
-    
+
     def __init__(self) -> None:
         super().__init__()
         self._has_output = True

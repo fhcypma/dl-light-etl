@@ -1,7 +1,7 @@
 import datetime
-from typing import List, Union, Dict, Any
-from pyspark.sql import DataFrame
+from typing import Any, Dict, List, Union
 
+from pyspark.sql import DataFrame
 
 # All variables in an ETL job
 EtlContext = Dict[str, Any]
