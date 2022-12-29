@@ -1,88 +1,56 @@
 from datetime import datetime
 
-from dl_light_etl import DEFAULT_DATA_KEY
 from dl_light_etl.transformers import (
     AddRunDateOrTimeTransformer,
     AddTechnicalFieldsTransformer,
-    IdentityTransformer,
-    TransformerAction,
-    Transformers,
+    JoinTransformer,
 )
-from dl_light_etl.types import StringRecords
-from pyspark.sql import SparkSession
-
-
-def test_identity_transformer():
-    # Given some data
-    input_data: StringRecords = ["some", "data"]
-    # When the transformer is applied
-    transformer = IdentityTransformer()
-    output_parameters, output_data = transformer.transform(
-        parameters={}, data={DEFAULT_DATA_KEY: input_data}
-    )
-    # Then no data should be returned
-    assert output_data is None
-
-
-def test_transformers(spark_session: SparkSession):
-    # Given some data
-    input_data = [("val1",), ("val2",)]
-    input_df = spark_session.createDataFrame(input_data, ["value"])
-    # And a run_date
-    run_date = datetime.now().date()
-    # And two transformers that do nothing
-    transformers = (
-        Transformers()
-        .add(
-            TransformerAction("intermediate_df", AddTechnicalFieldsTransformer("in_df"))
-        )
-        .add(
-            TransformerAction(
-                "out_df", AddRunDateOrTimeTransformer(run_date, "intermediate_df")
-            )
-        )
-    )
-    # When the transformers are both applied
-    output_parameters, output_data = transformers.transform(
-        parameters={}, data={"in_df": input_df}
-    )
-    # Then the data should be the same
-    assert output_data["in_df"].collect() == input_data
-    assert output_data["intermediate_df"].columns == [
-        "value",
-        "dl_ingestion_time",
-        "dl_input_file_name",
-    ]
-    assert output_data["out_df"].columns == [
-        "value",
-        "dl_ingestion_time",
-        "dl_input_file_name",
-        "dl_run_date",
-    ]
-    assert output_data["out_df"].collect()[1][3] == run_date
+from dl_light_etl.etl_constructs import RUN_DATE_KEY, RUN_TIME_KEY
+from pyspark.sql import SparkSession, Row
 
 
 def test_add_technical_fields_transformer(spark_session: SparkSession):
     # Given a dataframe
     input_data = [("val1",), ("val2",)]
     input_df = spark_session.createDataFrame(input_data, ["value"])
+    # And a time
+    time = datetime.now()
     # When the technical fields are added
     transformer = AddTechnicalFieldsTransformer()
-    output_parameters, output_data = transformer.transform(
-        parameters={}, data={DEFAULT_DATA_KEY: input_df}
-    )
+    output_data = transformer.execute(input_df, time)
     # Then the data should contain the technical columns
     assert output_data.columns == ["value", "dl_ingestion_time", "dl_input_file_name"]
+    assert output_data.collect()[0][1] == time
 
 
 def test_add_run_date_or_time_transformer(spark_session: SparkSession):
     # Given a dataframe
     input_data = [("val1",), ("val2",)]
     input_df = spark_session.createDataFrame(input_data, ["value"])
-    # When the technical fields are added
-    transformer = AddRunDateOrTimeTransformer(run_date_or_time=datetime.now().date())
-    output_parameters, output_data = transformer.transform(
-        parameters={}, data={DEFAULT_DATA_KEY: input_df}
-    )
-    # Then the data should contain the technical columns
-    assert output_data.columns == ["value", "dl_run_date"]
+    # And a run time and date
+    run_time = datetime.now()
+    run_date = run_time.date()
+    # When the run time is added
+    transformer = AddRunDateOrTimeTransformer(run_date_or_time=run_time)
+    output_data_with_time = transformer.execute(input_df)
+    # Then the data should contain the time
+    assert output_data_with_time.columns == ["value", RUN_TIME_KEY]
+    assert output_data_with_time.collect()[0][1] == run_time
+
+    # And when the run date is added
+    transformer = AddRunDateOrTimeTransformer(run_date_or_time=run_date)
+    output_data_with_date = transformer.execute(input_df)
+    # Then the data should contain the date
+    assert output_data_with_date.columns == ["value", RUN_DATE_KEY]
+    assert output_data_with_date.collect()[0][1] == run_date
+
+
+def test_join_transformer(spark_session: SparkSession):
+    # Given two dataframes
+    df1 = spark_session.createDataFrame([(1, "a")], ["id", "val"])
+    df2 = spark_session.createDataFrame([(1, "A"), (2, "B")], ["id", "name"])
+    # When the dataframes are joined
+    transformer = JoinTransformer("id")
+    output_data = transformer.execute(df1, df2)
+    # Then the data should be joined
+    assert output_data.collect()[0] == Row(id=1, val="a", name="A")

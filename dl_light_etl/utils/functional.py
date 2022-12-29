@@ -1,6 +1,6 @@
 import functools
 
 
-def foldl(func, acc, xs):
+def fold_left(iterator, accumulator, operator):
     """Fold left function"""
-    return functools.reduce(func, xs, acc)
+    return functools.reduce(operator, iterator, accumulator)

@@ -1,66 +1,28 @@
 import logging
-from abc import abstractmethod
 from pathlib import Path
 from types import FunctionType
-from typing import Dict, Tuple, Union
+from typing import Union, List
+from abc import abstractmethod
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
 
-from dl_light_etl import DEFAULT_DATA_KEY
-from dl_light_etl.types import AnyDataType, JobParameters, StringRecords
+from dl_light_etl.types import AnyDataType, StringRecords, EtlContext
 from dl_light_etl.utils import filesystem
+from dl_light_etl.etl_constructs import EtlAction, DEFAULT_DATA_KEY
 
 
-class Extractors:
-    """Basically a dict wrapper for multiple extractors
-
-    Will run in sequence during job execution, placing the resulting data objects in the provided keys
-
-    :Example:
-      Extractors()
-      .add("world", world_extractor)
-      .add("galaxy", galaxy_extractor)
-    """
-
-    def __init__(self) -> None:
-        self.extractors: Dict[str, "AbstractExtractor"] = {}
-
-    def add(self, *, key: str = None, extractor: "AbstractExtractor") -> "Extractors":
-        """Adds an extractor to this Extractors
-
-        :param str key: The key for the new extractor. Defaults to DEFAULT_DATA_KEY
-        :param AbstracExtractor extractor: The new extractor
-        :retuns: Itself, with the new extractor added
-        """
-        key = key if key else DEFAULT_DATA_KEY
-        assert (
-            key not in self.extractors.keys()
-        ), f"Key [{key}] already defined in Extractors"
-        self.extractors[key] = extractor
-        return self
-
-    def extract(
-        self, parameters: JobParameters
-    ) -> Tuple[JobParameters, Dict[str, AnyDataType]]:
-        """Extract the data for all extractors
-
-        :param JobParameters parameters: parameters in the job
-        :returns: The updated job parameters, and the data retrieved by all extractor (mapped to the key), respectively
-        :rtype: Tuple[JobParameters, Dict[str, AnyDataType]]
-        """
-        data_dict: Dict[str, AnyDataType] = {}
-        for key, extractor in self.extractors.items():
-            parameters, data = extractor.extract(parameters)
-            data_dict[key] = data
-        return parameters, data_dict
-
-
-class AbstractExtractor:
+class AbstractExtractor(EtlAction):
     """Abstract class for generic extractor"""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self._has_output = True
+        self._input_keys: List[str] = []
+        self._output_key = DEFAULT_DATA_KEY
+
     @abstractmethod
-    def extract(self, parameters: JobParameters) -> Tuple[JobParameters, AnyDataType]:
+    def execute(self, **kwargs) -> AnyDataType:
         pass
 
 
@@ -77,23 +39,22 @@ class FunctionExtractor(AbstractExtractor):
         self.extraction_fct = extraction_fct
         self.fct_params = fct_params
 
-    def extract(self, parameters: JobParameters) -> Tuple[JobParameters, AnyDataType]:
+    def execute(self) -> AnyDataType:
         """Extract the data
 
-        :param JobParameters parameters: The job parameters
-        :returns: The updated job parameters and the extracted data, respecively
-        :rtype: Tuple[JobParameters, AnyDataType]
+        :returns: The extracted data
+        :rtype: AnyDataType
         """
-        logging.info(f"Starting {type(self)}")
         data = self.extraction_fct(**self.fct_params)
-        return parameters, data
+        return data
 
 
 class TextFileExtractor(AbstractExtractor):
-    """Extractor that reads in a file to lines of strings, without using spark
+    """Extractor that reads in a single file to lines of strings
+    
+    Does not use spark
 
-    :param JobParameters parameters: The job parameters
-    :param
+    :param Union[Path, str] input_path: Path to the file
     """
 
     def __init__(self, input_path: Union[Path, str]) -> None:
@@ -102,17 +63,15 @@ class TextFileExtractor(AbstractExtractor):
             input_path if type(input_path) == str else str(input_path.resolve())
         )
 
-    def extract(self, parameters: JobParameters) -> Tuple[JobParameters, StringRecords]:
+    def execute(self) -> StringRecords:
         """Extract the data
 
-        :param JobParameters parameters: The job parameters
-        :returns: The updated job parameters and the extracted data, respecively
-        :rtype: Tuple[JobParameters, StringRecords]
+        :returns: The extracted data
+        :rtype: StringRecords
         """
-        logging.info(f"Starting {type(self)}")
         logging.info(f"Read file {self.input_path}")
         data = list(filesystem.read_text_file(path=self.input_path))
-        return parameters, data
+        return data
 
 
 class DataFrameExtractor(AbstractExtractor):
@@ -131,17 +90,16 @@ class DataFrameExtractor(AbstractExtractor):
         self.schema = schema
         self.options = options
 
-    def extract(self, parameters: JobParameters) -> Tuple[JobParameters, DataFrame]:
-        logging.info(f"Starting {type(self)}")
-        logging.info(f"Extracting text from {self.input_path}")
-        spark = SparkSession.getActiveSession()
+    def execute(self) -> DataFrame:
+        logging.info(f"Extracting DataFrame from {self.input_path}")
+        spark: SparkSession = SparkSession.getActiveSession()
         df = spark.read.load(
             path=self.input_path.replace("s3:", "s3a:"),
             format=self.format,
             schema=self.schema,
             **self.options,
         )
-        return (parameters, df)
+        return df
 
 
 class TextExtractor(DataFrameExtractor):

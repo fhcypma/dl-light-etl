@@ -1,16 +1,27 @@
 import logging
-from abc import abstractmethod
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import List, Union
+from abc import abstractmethod
 
-from dl_light_etl import DEFAULT_DATA_KEY
-from dl_light_etl.types import AnyDataType, JobParameters
+from pyspark.sql import DataFrame
+
+from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlContext, EtlAction
 from dl_light_etl.utils import filesystem
+from dl_light_etl.types import StringRecords
 
 
-class AbstractLoader:
+class AbstractLoader(EtlAction):
+    """Abstract class for saving a data object"""
+    
+    def __init__(self) -> None:
+        super().__init__()
+        self._has_output = False
+        self._input_keys: List[str] = [DEFAULT_DATA_KEY]
+        self._output_key = None
+
+
     @abstractmethod
-    def load(self, data, **kwargs) -> None:
+    def execute(self, **kwargs) -> None:
         pass
 
 
@@ -21,15 +32,11 @@ class TextFileLoader(AbstractLoader):
             output_path if type(output_path) == str else str(output_path.resolve())
         )
 
-    def load(
-        self, parameters: JobParameters, data: Dict[str, AnyDataType]
-    ) -> JobParameters:
-        logging.info(f"Starting {type(self)}")
+    def execute(self, lines: StringRecords) -> None:
         logging.info(f"Load data to {self.output_path}")
-        lines = data[DEFAULT_DATA_KEY]
+        assert type(lines) == StringRecords or type(lines) == list
 
         filesystem.write_text_file(path=self.output_path, content="\n".join(lines))
-        return parameters
 
 
 class ParquetLoader(AbstractLoader):
@@ -48,15 +55,11 @@ class ParquetLoader(AbstractLoader):
             output_path if type(output_path) == str else str(output_path.resolve())
         )
 
-    def load(
-        self, parameters: JobParameters, data: Dict[str, AnyDataType]
-    ) -> JobParameters:
-        logging.info(f"Starting {type(self)}")
+    def execute(self, df: DataFrame) -> None:
         logging.info(f"Loading data to {self.output_path}")
-        df = data[DEFAULT_DATA_KEY]
+        assert type(df) == DataFrame
 
         writer = df.write.mode(self.mode)
         if self.partition_by:
             writer = writer.partitionBy(*self.partition_by)
         writer.parquet(self.output_path.replace("s3:", "s3a:"))
-        return parameters

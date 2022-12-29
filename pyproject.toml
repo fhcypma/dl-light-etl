@@ -17,7 +17,7 @@ classifiers = [
 "Homepage" = "https://github.com/fhcypma/dl-light-etl"
 
 [tool.setuptools]
-packages = ["dl_light_etl", "dl_light_etl.utils"]
+packages = ["dl_light_etl", "dl_light_etl.utils", "dl_light_etl.side_effects"]
 
 [build-system]
 requires = ["setuptools"]
