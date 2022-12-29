@@ -59,7 +59,6 @@ def test_simple_csv_to_parquet_spark_job(
     # Then there should be a parquet filecreated
     out_files = list(out_dir_path.glob("*.parquet"))
     assert len(out_files) == 1
-    print(out_files)
     # And it should contain the data
     actual_df = spark_session.read.parquet(str(out_files[0]))
     assert actual_df.columns == [
