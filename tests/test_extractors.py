@@ -90,5 +90,3 @@ def test_csv_extractor_validation(spark_session: SparkSession, rand_path: Path):
     # When the file is read
     extractor = CsvExtractor(input_path=rand_path, schema=schema, sep=sep)
     dummy_context = extractor.dummy_process({})
-    print(dummy_context)
-    assert 1 == 0
