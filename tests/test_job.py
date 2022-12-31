@@ -1,22 +1,25 @@
 import logging
 from datetime import date
 from pathlib import Path
+import pytest
 
 from pyspark.sql import Row, SparkSession
 from pytest import LogCaptureFixture
 
 from dl_light_etl.etl_constructs import EtlJob
-from dl_light_etl.extractors import CsvExtractor
-from dl_light_etl.loaders import ParquetLoader
+from dl_light_etl.extractors import CsvExtractor, FunctionExtractor
+from dl_light_etl.loaders import ParquetLoader, TextFileLoader
 from dl_light_etl.side_effects.timing import (
     JOB_START_TIME,
     JobStartTimeGetter,
     LogDurationSideEffect,
 )
 from dl_light_etl.transformers import AddTechnicalFieldsTransformer, JoinTransformer
+from dl_light_etl.types import StringRecords
+from dl_light_etl.errors import ValidationException
 
 
-def test_simple_csv_to_parquet_spark_job(
+def test_csv_join_to_parquet_spark_job(
     caplog: LogCaptureFixture,
     spark_session: SparkSession,
     rand_dir_path: Path,
@@ -53,7 +56,10 @@ def test_simple_csv_to_parquet_spark_job(
             LogDurationSideEffect(),
         ],
     )
-    # When the job is executed
+    # When the job is validated
+    # Then there should not be an exception
+    job.validate()
+    # And when the job is executed
     with caplog.at_level(logging.INFO):
         job.execute()
     # Then there should be a parquet filecreated
@@ -82,4 +88,22 @@ def test_simple_csv_to_parquet_spark_job(
     assert (
         "Starting action <class 'dl_light_etl.extractors.CsvExtractor'>" in caplog.text
     )
-    # Not checking all the others...
+    # Not checking all the others lines in the log...
+
+
+def test_incorrect_key_fail(rand_path: Path):
+    # Given a job that tries to use a non-existing key
+    def generate_data() -> StringRecords:
+        return ["hello", "world"]
+
+    job = EtlJob(
+        run_date_or_time=date(2022, 1, 1),
+        actions=[
+            FunctionExtractor(generate_data).with_output_key("foo"),
+            TextFileLoader(rand_path).with_input_keys("bar"),
+        ],
+    )
+    # When the job is validated
+    # Then an exception should be thrown
+    with pytest.raises(ValidationException):
+        job.validate()

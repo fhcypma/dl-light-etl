@@ -2,9 +2,11 @@ import logging
 from abc import abstractmethod
 from datetime import date, datetime
 from typing import Any, Dict, List
+from inspect import signature
 
 from dl_light_etl.types import DateOrDatetime, EtlContext
 from dl_light_etl.utils.functional import fold_left
+from dl_light_etl.errors import ValidationException
 
 DEFAULT_DATA_KEY = "final_df"
 RUN_DATE_KEY = "run_date"
@@ -32,7 +34,7 @@ class EtlAction:
         # Should be True for Extractor, Transformer, ValueGetter
         self._has_output = False
 
-    def process(self, context: Dict[str, Any]) -> EtlContext:
+    def process(self, context: EtlContext) -> EtlContext:
         """Gets the correct parameters from context, executes actions and puts result back in context"""
         input_parameters = [context[key] for key in self._input_keys]
         output = self.execute(*input_parameters)
@@ -42,6 +44,33 @@ class EtlAction:
             return new_context
         else:
             return context
+
+    @abstractmethod
+    def dummy_process(self, dummy_context: Dict[str, type]) -> Dict[str, type]:
+        """Pass around the context; validating if the required keys are there
+
+        The dummy_context parameter contains the actual EtlContext keys, but instead of values, it contains the value type"""
+        sig = signature(self.execute)
+        for parameter_key, parameter in zip(self._input_keys, sig.parameters.values()):
+            parameter_type = parameter.annotation
+            logging.info(
+                f"Checking for parameter {parameter_key} of type {parameter_type}"
+            )
+            if parameter_key not in dummy_context:
+                raise ValidationException(
+                    f"Key {parameter_key} was not found in EtlContext"
+                )
+            if dummy_context[parameter_key] != parameter_type:
+                raise ValidationException(
+                    f"Key {parameter_key} in EtlContext is of type {dummy_context[parameter_key]}, but {parameter_type} required"
+                )
+
+        if self._has_output:
+            output_type = sig.return_annotation
+            logging.info(f"Adding parameter {self._output_key} of type {output_type}")
+            dummy_context[self._output_key] = output_type
+
+        return dummy_context
 
     @abstractmethod
     def execute(self, **kwargs) -> Any:
@@ -70,16 +99,30 @@ class EtlJob:
         self.actions: List[EtlAction] = actions
         # TODO validate actions?
 
-    @staticmethod
-    def _execute_action(context: EtlContext, action: EtlAction) -> EtlContext:
-        logging.info(f"Starting action {type(action)}")
-        return action.process(context)
-
     def execute(self) -> None:
         logging.info("Starting job")
+
+        def execute_action(context: EtlContext, action: EtlAction) -> EtlContext:
+            logging.info(f"Starting action {type(action)}")
+            return action.process(context)
+
         fold_left(
             iterator=self.actions,
             accumulator=self.context,
-            operator=self._execute_action,
+            operator=execute_action,
         )
         logging.info("Job completed")
+
+    def validate(self) -> None:
+        logging.info("Validating job")
+
+        def validate_action(
+            dummy_context: Dict[str, type], action: EtlAction
+        ) -> EtlContext:
+            logging.info(f"Validating action {type(action)}")
+            return action.dummy_process(dummy_context)
+
+        fold_left(
+            iterator=self.actions, accumulator=self.context, operator=validate_action
+        )
+        logging.info("Validation ok")

@@ -36,6 +36,7 @@ class FunctionExtractor(AbstractExtractor):
     """
 
     def __init__(self, extraction_fct: FunctionType, **fct_params) -> None:
+        super().__init__()
         self.extraction_fct = extraction_fct
         self.fct_params = fct_params
 

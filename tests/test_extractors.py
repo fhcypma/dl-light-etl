@@ -73,3 +73,22 @@ def test_csv_extractor(spark_session: SparkSession, rand_path: Path):
         Row(col1="val1", col2="val2"),
         Row(col1="val1", col2="val2"),
     ]
+
+
+def test_csv_extractor_validation(spark_session: SparkSession, rand_path: Path):
+    # Given a csv file
+    schema = StructType(
+        [
+            StructField("col1", StringType()),
+            StructField("col2", StringType()),
+        ]
+    )
+    sep = "|"
+    input_data = [["val1", "val2"], ["val1", "val2"]]
+    input_lines = ["|".join(line) for line in input_data]
+    rand_path.write_text("\n".join(input_lines))
+    # When the file is read
+    extractor = CsvExtractor(input_path=rand_path, schema=schema, sep=sep)
+    dummy_context = extractor.dummy_process({})
+    print(dummy_context)
+    assert 1 == 0
