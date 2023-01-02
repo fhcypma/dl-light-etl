@@ -125,7 +125,7 @@ class CsvExtractor(DataFrameExtractor):
         super().__init__(input_path, format="csv", schema=schema, **options)
 
 
-class CsvExtractor(DataFrameExtractor):
+class ParquetExtractor(DataFrameExtractor):
     def __init__(
         self,
         input_path: Union[Path, str],
