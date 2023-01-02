@@ -123,3 +123,14 @@ class CsvExtractor(DataFrameExtractor):
     ) -> None:
         options = options if options else {}
         super().__init__(input_path, format="csv", schema=schema, **options)
+
+
+class CsvExtractor(DataFrameExtractor):
+    def __init__(
+        self,
+        input_path: Union[Path, str],
+        schema: StructType = None,
+        **options,
+    ) -> None:
+        options = options if options else {}
+        super().__init__(input_path, format="parquet", schema=schema, **options)
