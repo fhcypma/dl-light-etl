@@ -89,7 +89,7 @@ class JoinTransformer(AbstractTransformer):
 
 
 class SelectTransformer(AbstractTransformer):
-    """Select certain columns"""
+    """Select (a) column(s)"""
 
     def __init__(self, *cols: Union[str, Column]) -> None:
         super().__init__()
@@ -97,3 +97,14 @@ class SelectTransformer(AbstractTransformer):
 
     def execute(self, df: DataFrame) -> DataFrame:
         return df.select(*self.cols)
+
+
+class FilterTransformer(AbstractTransformer):
+    """Filter on (a) column(s)"""
+
+    def __init__(self, condition: Union[Column, str]) -> None:
+        super().__init__()
+        self.condition = condition
+
+    def execute(self, df: DataFrame) -> DataFrame:
+        return df.filter(self.condition)

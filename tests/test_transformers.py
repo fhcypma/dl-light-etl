@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from pyspark.sql import Row, SparkSession
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
 from dl_light_etl.etl_constructs import RUN_DATE_KEY, RUN_TIME_KEY
 from dl_light_etl.transformers import (
@@ -8,6 +9,7 @@ from dl_light_etl.transformers import (
     AddTechnicalFieldsTransformer,
     JoinTransformer,
     SelectTransformer,
+    FilterTransformer,
 )
 
 
@@ -74,3 +76,13 @@ def test_select_transformer(spark_session: SparkSession):
     assert output_data.columns == ["id"]
     # And the data should remain unchanged
     assert output_data.collect()[0][0] == 1
+
+
+def test_filter_transformer(spark_session: SparkSession):
+    # Given a dataframe
+    df = spark_session.createDataFrame([(1, "a"), (2, "b")], ["id", "val"])
+    # When records are filteres
+    transformer = FilterTransformer(col("id") == 1)
+    output_data = transformer.execute(df)
+    # Then the data shoulld be filtered
+    assert output_data.count() == 1
