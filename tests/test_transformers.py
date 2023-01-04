@@ -59,11 +59,7 @@ def test_join_transformer(spark_session: SparkSession):
     output_data = transformer.execute(df1, df2)
     # Then the data should be joined
     # And there should be aliases in place, based on the input keys
-    output_data.select(
-        "id",
-        "one.val",
-        "two.val"
-    ).collect()[0] == [1, "a", "A"]
+    output_data.select("id", "one.val", "two.val").collect()[0] == [1, "a", "A"]
 
 
 def test_select_transformer(spark_session: SparkSession):

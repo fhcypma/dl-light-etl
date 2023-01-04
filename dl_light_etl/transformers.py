@@ -81,10 +81,8 @@ class JoinTransformer(AbstractTransformer):
         self.how = how
 
     def execute(self, df1: DataFrame, df2: DataFrame) -> DataFrame:
-        return (
-            df1
-            .alias(self._input_keys[0])
-            .join(df2.alias(self._input_keys[1]), self.on, self.how)
+        return df1.alias(self._input_keys[0]).join(
+            df2.alias(self._input_keys[1]), self.on, self.how
         )
 
 
