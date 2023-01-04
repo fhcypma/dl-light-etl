@@ -1,17 +1,17 @@
 import logging
 from abc import abstractmethod
 from datetime import date, datetime
-from typing import Any, Dict, List
 from inspect import signature
+from typing import Any, Dict, List
 
+from dl_light_etl.errors import ValidationException
 from dl_light_etl.types import DateOrDatetime, EtlContext
 from dl_light_etl.utils.functional import fold_left
-from dl_light_etl.errors import ValidationException
 
 DEFAULT_DATA_KEY = "final_df"
-RUN_DATE_KEY = "run_date"
-RUN_TIME_KEY = "run_time"
-PROTECTED_KEYS = [RUN_DATE_KEY, RUN_TIME_KEY]
+RUN_DATE = "dl_run_date"
+RUN_TIME = "dl_run_time"
+PROTECTED_KEYS = [RUN_DATE, RUN_TIME]
 
 
 class EtlAction:
@@ -91,10 +91,10 @@ class EtlJob:
     ) -> None:
         self.context: EtlContext = {}
         if type(run_date_or_time) == date:
-            self.context[RUN_DATE_KEY] = run_date_or_time
+            self.context[RUN_DATE] = run_date_or_time
         else:
             assert type(run_date_or_time) == datetime
-            self.context[RUN_TIME_KEY] = run_date_or_time
+            self.context[RUN_TIME] = run_date_or_time
 
         self.actions: List[EtlAction] = actions
         # TODO validate actions?

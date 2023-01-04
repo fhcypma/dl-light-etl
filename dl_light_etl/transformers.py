@@ -5,12 +5,8 @@ from typing import List, Union
 from pyspark.sql import Column, DataFrame
 from pyspark.sql import functions as f
 
-from dl_light_etl.etl_constructs import (
-    DEFAULT_DATA_KEY,
-    RUN_DATE_KEY,
-    RUN_TIME_KEY,
-    EtlAction,
-)
+from dl_light_etl.etl_constructs import (DEFAULT_DATA_KEY, RUN_DATE, RUN_TIME,
+                                         EtlAction)
 from dl_light_etl.side_effects.timing import JOB_START_TIME
 from dl_light_etl.types import AnyDataType
 
@@ -64,7 +60,7 @@ class AddRunDateOrTimeTransformer(AbstractTransformer):
             raise NotImplementedError(f"Cannot add field to data of type {type(df)}")
 
         col_name = (
-            RUN_DATE_KEY if type(self._run_date_or_time) == date else RUN_TIME_KEY
+            RUN_DATE if type(self._run_date_or_time) == date else RUN_TIME
         )
         df = df.withColumn(col_name, f.lit(self._run_date_or_time))
         return df

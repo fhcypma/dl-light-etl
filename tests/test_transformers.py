@@ -3,14 +3,11 @@ from datetime import datetime
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
-from dl_light_etl.etl_constructs import RUN_DATE_KEY, RUN_TIME_KEY
-from dl_light_etl.transformers import (
-    AddRunDateOrTimeTransformer,
-    AddTechnicalFieldsTransformer,
-    JoinTransformer,
-    SelectTransformer,
-    FilterTransformer,
-)
+from dl_light_etl.etl_constructs import RUN_DATE, RUN_TIME
+from dl_light_etl.transformers import (AddRunDateOrTimeTransformer,
+                                       AddTechnicalFieldsTransformer,
+                                       FilterTransformer, JoinTransformer,
+                                       SelectTransformer)
 
 
 def test_add_technical_fields_transformer(spark_session: SparkSession):
@@ -38,14 +35,14 @@ def test_add_run_date_or_time_transformer(spark_session: SparkSession):
     transformer = AddRunDateOrTimeTransformer(run_date_or_time=run_time)
     output_data_with_time = transformer.execute(input_df)
     # Then the data should contain the time
-    assert output_data_with_time.columns == ["value", RUN_TIME_KEY]
+    assert output_data_with_time.columns == ["value", RUN_TIME]
     assert output_data_with_time.collect()[0][1] == run_time
 
     # And when the run date is added
     transformer = AddRunDateOrTimeTransformer(run_date_or_time=run_date)
     output_data_with_date = transformer.execute(input_df)
     # Then the data should contain the date
-    assert output_data_with_date.columns == ["value", RUN_DATE_KEY]
+    assert output_data_with_date.columns == ["value", RUN_DATE]
     assert output_data_with_date.collect()[0][1] == run_date
 
 
