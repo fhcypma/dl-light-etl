@@ -25,7 +25,7 @@ class LogDataSideEffect(AbstractSideEffect):
         logging.info(f"Showing data object {self._input_keys[0]}:")
         if type(data) == DataFrame:
             data: DataFrame = data
-            logging.info(data._jdf.showString(self.n, self.truncate, self.vertical))
+            logging.info("\n" + data._jdf.showString(self.n, self.truncate, self.vertical))
         elif type(data) == list:
             data: List[str] = data
             for line in data[: self.n]:

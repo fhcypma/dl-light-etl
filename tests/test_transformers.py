@@ -50,12 +50,18 @@ def test_add_run_date_or_time_transformer(spark_session: SparkSession):
 def test_join_transformer(spark_session: SparkSession):
     # Given two dataframes
     df1 = spark_session.createDataFrame([(1, "a")], ["id", "val"])
-    df2 = spark_session.createDataFrame([(1, "A"), (2, "B")], ["id", "name"])
+    df2 = spark_session.createDataFrame([(1, "A"), (2, "B")], ["id", "val"])
     # When the dataframes are joined
     transformer = JoinTransformer("id")
+    transformer._input_keys = ["one", "two"]
     output_data = transformer.execute(df1, df2)
     # Then the data should be joined
-    assert output_data.collect()[0] == Row(id=1, val="a", name="A")
+    # And there should be aliases in place, based on the input keys
+    output_data.select(
+        "id",
+        "one.val",
+        "two.val"
+    ).collect()[0] == [1, "a", "A"]
 
 
 def test_select_transformer(spark_session: SparkSession):
