@@ -7,6 +7,7 @@ from dl_light_etl.transformers import (
     AddRunDateOrTimeTransformer,
     AddTechnicalFieldsTransformer,
     JoinTransformer,
+    SelectTransformer,
 )
 
 
@@ -55,3 +56,15 @@ def test_join_transformer(spark_session: SparkSession):
     output_data = transformer.execute(df1, df2)
     # Then the data should be joined
     assert output_data.collect()[0] == Row(id=1, val="a", name="A")
+
+
+def test_select_transformer(spark_session: SparkSession):
+    # Given a dataframe
+    df = spark_session.createDataFrame([(1, "a")], ["id", "val"])
+    # When columns are selected
+    transformer = SelectTransformer("id")
+    output_data = transformer.execute(df)
+    # Then only that column should be selected
+    assert output_data.columns == ["id"]
+    # And the data should remain unchanged
+    assert output_data.collect()[0][0] == 1

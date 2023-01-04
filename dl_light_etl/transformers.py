@@ -82,3 +82,14 @@ class JoinTransformer(AbstractTransformer):
 
     def execute(self, df1: DataFrame, df2: DataFrame) -> DataFrame:
         return df1.join(df2, self.on, self.how)
+
+
+class SelectTransformer(AbstractTransformer):
+    """Select certain columns"""
+
+    def __init__(self, *cols: Union[str, Column]) -> None:
+        super().__init__()
+        self.cols = cols
+
+    def execute(self, df: DataFrame) -> DataFrame:
+        return df.select(*self.cols)
