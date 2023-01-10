@@ -161,8 +161,6 @@ class CompositeEtlStep(EtlStep):
         if self._output_alias:
             return context[self._inner_output_alias]
 
-    # Since _execute() has no defined signature, we cannot check the in- and output aliases
-
     def _validate_input_aliases(self):
         expected_n_params = len(self._inner_input_aliases)
         actual_n_params = len(self._input_aliases)
