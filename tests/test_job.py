@@ -1,12 +1,13 @@
 import logging
 from datetime import date
 from pathlib import Path
-import pytest
 
+import pytest
 from pyspark.sql import Row, SparkSession
 from pytest import LogCaptureFixture
 
-from dl_light_etl.etl_constructs import EtlJob
+from dl_light_etl.base import EtlJob
+from dl_light_etl.errors import ValidationException
 from dl_light_etl.extractors import CsvExtractor, FunctionExtractor
 from dl_light_etl.loaders import ParquetLoader, TextFileLoader
 from dl_light_etl.side_effects.timing import (
@@ -16,7 +17,6 @@ from dl_light_etl.side_effects.timing import (
 )
 from dl_light_etl.transformers import AddTechnicalFieldsTransformer, JoinTransformer
 from dl_light_etl.types import StringRecords
-from dl_light_etl.errors import ValidationException
 
 
 def test_csv_join_to_parquet_spark_job(
@@ -34,34 +34,35 @@ def test_csv_join_to_parquet_spark_job(
     # And a job that joins the data and writes it to parquet
     out_dir_path = rand_dir_path / "out"
     job = EtlJob(
-        run_date_or_time=date(2022, 1, 1),
-        actions=[
-            JobStartTimeGetter(),
-            CsvExtractor(
-                input_path=in_file_path1,
-                header="true",
-            ).with_output_key("data"),
-            CsvExtractor(
-                input_path=in_file_path2,
-                header="true",
-            ).with_output_key("lookup"),
-            AddTechnicalFieldsTransformer()
-            .with_input_keys("data", JOB_START_TIME)
-            .with_output_key("data_enriched"),
-            JoinTransformer(on="id").with_input_keys("data_enriched", "lookup"),
-            ParquetLoader(
-                mode="overwrite",
-                output_path=out_dir_path,
-            ),
-            LogDurationSideEffect(),
-        ],
+        date(2022, 1, 1),
+        JobStartTimeGetter(),
+        CsvExtractor(
+            input_path=in_file_path1,
+            header="true",
+        )
+        .alias("data"),
+        CsvExtractor(
+            input_path=in_file_path2,
+            header="true",
+        )
+        .alias("lookup"),
+        AddTechnicalFieldsTransformer()
+        .on_aliases("data", JOB_START_TIME)
+        .alias("data_enriched"),
+        JoinTransformer(on="id")
+        .on_aliases("data_enriched", "lookup"),
+        ParquetLoader(
+            mode="overwrite",
+            output_path=out_dir_path,
+        ),
+        LogDurationSideEffect(),
     )
     # When the job is validated
-    # Then there should not be an exception
     job.validate()
+    # Then there should not be an exception
     # And when the job is executed
     with caplog.at_level(logging.INFO):
-        job.execute()
+        job.process()
     # Then there should be a parquet filecreated
     out_files = list(out_dir_path.glob("*.parquet"))
     assert len(out_files) == 1
@@ -80,13 +81,14 @@ def test_csv_join_to_parquet_spark_job(
         )
     ]
     # And the logs should show the execution flow
+    assert "Validating job" in caplog.text
     assert "Starting job" in caplog.text
     assert (
-        "Starting action <class 'dl_light_etl.side_effects.timing.JobStartTimeGetter'>"
+        "Starting step <class 'dl_light_etl.side_effects.timing.JobStartTimeGetter'>"
         in caplog.text
     )
     assert (
-        "Starting action <class 'dl_light_etl.extractors.CsvExtractor'>" in caplog.text
+        "Starting step <class 'dl_light_etl.extractors.CsvExtractor'>" in caplog.text
     )
     # Not checking all the others lines in the log...
 
@@ -97,13 +99,12 @@ def test_incorrect_key_fail(rand_path: Path):
         return ["hello", "world"]
 
     job = EtlJob(
-        run_date_or_time=date(2022, 1, 1),
-        actions=[
-            FunctionExtractor(generate_data).with_output_key("foo"),
-            TextFileLoader(rand_path).with_input_keys("bar"),
-        ],
+        date(2022, 1, 1),
+        FunctionExtractor(generate_data).alias("foo"),
+        TextFileLoader(rand_path).on_alias("bar"),
     )
     # When the job is validated
     # Then an exception should be thrown
-    with pytest.raises(ValidationException):
+    with pytest.raises(ValidationException) as e:
         job.validate()
+    assert "Key bar was not found in EtlContext" in str(e)

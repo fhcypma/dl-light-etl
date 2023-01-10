@@ -1,9 +1,11 @@
 import logging
+from typing import List
 from types import FunctionType
 
 from pyspark.sql import DataFrame
 
 from dl_light_etl.errors import DataException
+from dl_light_etl.base import DEFAULT_DATA_KEY
 from dl_light_etl.side_effects.abstract import AbstractSideEffect
 from dl_light_etl.types import AnyDataType
 
@@ -11,16 +13,22 @@ from dl_light_etl.types import AnyDataType
 class SimpleDataValidationSideEffect(AbstractSideEffect):
     """Validate one of the data objets"""
 
-    def __init__(self, validation_fct: FunctionType) -> None:
+    def __init__(
+        self,
+        validation_fct: FunctionType,
+        default_input_aliases: List[str] = [DEFAULT_DATA_KEY],
+    ) -> None:
+        super().__init__(default_input_aliases=default_input_aliases)
         self.validation_fct = validation_fct
 
-    def execute(self, **kwargs) -> None:
-        self.validation_fct(**kwargs)
+    def _execute(self, *args) -> None:
+        print(args)
+        self.validation_fct(*args)
 
 
-class RecordCountValidationAction(SimpleDataValidationSideEffect):
+class RecordCountValidationSideEffect(SimpleDataValidationSideEffect):
     def __init__(self, expected_count: int) -> None:
-        def validate_input_data(self, data_object: AnyDataType) -> None:
+        def validate_input_data(data_object: AnyDataType) -> None:
             """Validate data on having n_lines hours"""
             logging.info(f"Starting {type(self)}")
             if type(data_object) == list:

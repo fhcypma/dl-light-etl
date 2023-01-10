@@ -1,37 +1,27 @@
 from abc import abstractmethod
 from typing import Any, List
 
-from dl_light_etl.etl_constructs import EtlAction
+from dl_light_etl.base import EtlStep
 
 
-class AbstractSideEffect(EtlAction):
+class AbstractSideEffect(EtlStep):
     """Abstract class for geeneric side effect
 
     Does not alter the etl context
     Intended for log actions, etc.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._input_keys: List[str] = []
-        self._output_key = None
-        self._has_output = False
+    def __init__(self, default_input_aliases: List[str]) -> None:
+        super().__init__(default_input_aliases)
 
     @abstractmethod
-    def execute(self, **kwargs) -> None:
+    def _execute(self, *args) -> None:
         pass
 
 
-class AbstractValueGetter(EtlAction):
+class AbstractValueGetter(EtlStep):
     """Abstract class for producing some value"""
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._has_output = True
-        # Values below to be set in implementation
-        self._input_keys: List[str] = []
-        self._output_key = None
-
     @abstractmethod
-    def execute(self, **kwargs) -> Any:
+    def _execute(self, *args) -> Any:
         pass

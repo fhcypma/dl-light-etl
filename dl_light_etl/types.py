@@ -6,6 +6,9 @@ from pyspark.sql import DataFrame
 # All variables in an ETL job
 EtlContext = Dict[str, Any]
 
+# Dummy variables holder; for validtion
+DummyContext = Dict[str, type]
+
 # Type for flat text file data
 StringRecords = List[str]
 

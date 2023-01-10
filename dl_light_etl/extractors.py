@@ -2,27 +2,24 @@ import logging
 from abc import abstractmethod
 from pathlib import Path
 from types import FunctionType
-from typing import List, Union
+from typing import List, Optional, Union
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
 
-from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlAction
+from dl_light_etl.base import DEFAULT_DATA_KEY, EtlStep
 from dl_light_etl.types import AnyDataType, StringRecords
 from dl_light_etl.utils import filesystem
 
 
-class AbstractExtractor(EtlAction):
+class AbstractExtractor(EtlStep):
     """Abstract class for generic extractor"""
 
     def __init__(self) -> None:
-        super().__init__()
-        self._has_output = True
-        self._input_keys: List[str] = []
-        self._output_key = DEFAULT_DATA_KEY
+        super().__init__(default_output_alias=DEFAULT_DATA_KEY)
 
     @abstractmethod
-    def execute(self, **kwargs) -> AnyDataType:
+    def _execute(self, **kwargs) -> AnyDataType:
         pass
 
 
@@ -40,7 +37,7 @@ class FunctionExtractor(AbstractExtractor):
         self.extraction_fct = extraction_fct
         self.fct_params = fct_params
 
-    def execute(self) -> AnyDataType:
+    def _execute(self) -> AnyDataType:
         """Extract the data
 
         :returns: The extracted data
@@ -64,7 +61,7 @@ class TextFileExtractor(AbstractExtractor):
             input_path if type(input_path) == str else str(input_path.resolve())
         )
 
-    def execute(self) -> StringRecords:
+    def _execute(self) -> StringRecords:
         """Extract the data
 
         :returns: The extracted data
@@ -80,7 +77,7 @@ class DataFrameExtractor(AbstractExtractor):
         self,
         input_path: Union[Path, str],
         format: str,
-        schema: StructType = None,
+        schema: Optional[StructType] = None,
         **options,
     ) -> None:
         super().__init__()
@@ -91,7 +88,7 @@ class DataFrameExtractor(AbstractExtractor):
         self.schema = schema
         self.options = options
 
-    def execute(self) -> DataFrame:
+    def _execute(self) -> DataFrame:
         logging.info(f"Extracting DataFrame from {self.input_path}")
         spark: SparkSession = SparkSession.getActiveSession()
         df = spark.read.load(

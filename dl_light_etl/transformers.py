@@ -5,23 +5,22 @@ from typing import List, Union
 from pyspark.sql import Column, DataFrame
 from pyspark.sql import functions as f
 
-from dl_light_etl.etl_constructs import (DEFAULT_DATA_KEY, RUN_DATE, RUN_TIME,
-                                         EtlAction)
+from dl_light_etl.base import DEFAULT_DATA_KEY, RUN_DATE, RUN_TIME, EtlStep
 from dl_light_etl.side_effects.timing import JOB_START_TIME
-from dl_light_etl.types import AnyDataType
+from dl_light_etl.types import AnyDataType, DateOrDatetime
 
 
-class AbstractTransformer(EtlAction):
+class AbstractTransformer(EtlStep):
     """Abstract class for generic data transformer"""
 
     def __init__(self) -> None:
-        super().__init__()
-        self._has_output = True
-        self._input_keys: List[str] = [DEFAULT_DATA_KEY]
-        self._output_key = DEFAULT_DATA_KEY
+        super().__init__(
+            default_input_aliases=[DEFAULT_DATA_KEY],
+            default_output_alias=DEFAULT_DATA_KEY,
+        )
 
     @abstractmethod
-    def execute(self, **kwargs) -> AnyDataType:
+    def _execute(self, **kwargs) -> AnyDataType:
         pass
 
 
@@ -38,10 +37,7 @@ class AddTechnicalFieldsTransformer(AbstractTransformer):
         super().__init__()
         self._input_keys = [DEFAULT_DATA_KEY, JOB_START_TIME]
 
-    def execute(self, df: DataFrame, job_start_time: datetime) -> DataFrame:
-        if type(df) != DataFrame:
-            raise NotImplementedError(f"Cannot add field to data of type {type(df)}")
-
+    def _execute(self, df: DataFrame, job_start_time: datetime) -> DataFrame:
         df = df.withColumn("dl_ingestion_time", f.lit(job_start_time)).withColumn(
             "dl_input_file_name", f.input_file_name()
         )
@@ -51,18 +47,9 @@ class AddTechnicalFieldsTransformer(AbstractTransformer):
 class AddRunDateOrTimeTransformer(AbstractTransformer):
     """Adds dl_run_date or dl_run_time to the DataFrame"""
 
-    def __init__(self, run_date_or_time: Union[date, datetime]) -> None:
-        super().__init__()
-        self._run_date_or_time = run_date_or_time
-
-    def execute(self, df: DataFrame) -> DataFrame:
-        if type(df) != DataFrame:
-            raise NotImplementedError(f"Cannot add field to data of type {type(df)}")
-
-        col_name = (
-            RUN_DATE if type(self._run_date_or_time) == date else RUN_TIME
-        )
-        df = df.withColumn(col_name, f.lit(self._run_date_or_time))
+    def _execute(self, df: DataFrame, run_date_or_time: DateOrDatetime) -> DataFrame:
+        col_name = RUN_DATE if type(run_date_or_time) == date else RUN_TIME
+        df = df.withColumn(col_name, f.lit(run_date_or_time))
         return df
 
 
@@ -76,9 +63,9 @@ class JoinTransformer(AbstractTransformer):
         self.on = on
         self.how = how
 
-    def execute(self, df1: DataFrame, df2: DataFrame) -> DataFrame:
-        return df1.alias(self._input_keys[0]).join(
-            df2.alias(self._input_keys[1]), self.on, self.how
+    def _execute(self, df1: DataFrame, df2: DataFrame) -> DataFrame:
+        return df1.alias(self._input_aliases[0]).join(
+            df2.alias(self._input_aliases[1]), self.on, self.how
         )
 
 
@@ -89,7 +76,7 @@ class SelectTransformer(AbstractTransformer):
         super().__init__()
         self.cols = cols
 
-    def execute(self, df: DataFrame) -> DataFrame:
+    def _execute(self, df: DataFrame) -> DataFrame:
         return df.select(*self.cols)
 
 
@@ -100,5 +87,5 @@ class FilterTransformer(AbstractTransformer):
         super().__init__()
         self.condition = condition
 
-    def execute(self, df: DataFrame) -> DataFrame:
+    def _execute(self, df: DataFrame) -> DataFrame:
         return df.filter(self.condition)

@@ -5,22 +5,19 @@ from typing import List, Union
 
 from pyspark.sql import DataFrame
 
-from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlAction
+from dl_light_etl.base import DEFAULT_DATA_KEY, EtlStep
 from dl_light_etl.types import StringRecords
 from dl_light_etl.utils import filesystem
 
 
-class AbstractLoader(EtlAction):
+class AbstractLoader(EtlStep):
     """Abstract class for saving a data object"""
 
     def __init__(self) -> None:
-        super().__init__()
-        self._has_output = False
-        self._input_keys: List[str] = [DEFAULT_DATA_KEY]
-        self._output_key = None
+        super().__init__(default_input_aliases=[DEFAULT_DATA_KEY])
 
     @abstractmethod
-    def execute(self, **kwargs) -> None:
+    def _execute(self, **kwargs) -> None:
         pass
 
 
@@ -31,7 +28,7 @@ class TextFileLoader(AbstractLoader):
             output_path if type(output_path) == str else str(output_path.resolve())
         )
 
-    def execute(self, lines: StringRecords) -> None:
+    def _execute(self, lines: StringRecords) -> None:
         logging.info(f"Load data to {self.output_path}")
         assert type(lines) == StringRecords or type(lines) == list
 
@@ -54,7 +51,7 @@ class ParquetLoader(AbstractLoader):
             output_path if type(output_path) == str else str(output_path.resolve())
         )
 
-    def execute(self, df: DataFrame) -> None:
+    def _execute(self, df: DataFrame) -> None:
         logging.info(f"Loading data to {self.output_path}")
         assert type(df) == DataFrame
 

@@ -3,19 +3,18 @@ import logging
 from pyspark.sql import SparkSession
 from pytest import LogCaptureFixture
 
-from dl_light_etl.etl_constructs import DEFAULT_DATA_KEY, EtlContext
+from dl_light_etl.base import DEFAULT_DATA_KEY, EtlContext
 from dl_light_etl.side_effects.data_logging import LogDataSideEffect
 from dl_light_etl.types import StringRecords
 
 
 def test_log_data_action_string(caplog: LogCaptureFixture):
-    # Given lines of data
+    # Given an etl context with lines of data
     input_data: StringRecords = ["line1", "line2"]
-    # And a context containing that data
-    key = "custom_key"
-    context: EtlContext = {key: input_data}
-    # When the data is logged
-    action = LogDataSideEffect().with_input_keys(key)
+    context = {"data": input_data}
+    # And a side effect to log the data
+    action = LogDataSideEffect().on_alias("data")
+    # When side effect is processed
     with caplog.at_level(logging.INFO):
         action.process(context)
     # Then the data should be in the logs
@@ -24,12 +23,12 @@ def test_log_data_action_string(caplog: LogCaptureFixture):
 
 
 def test_log_data_action_string_limited_output(caplog: LogCaptureFixture):
-    # Given lines of data
+    # Given an etl context with lines of data
     input_data: StringRecords = ["line1", "line2"]
-
     context = {DEFAULT_DATA_KEY: input_data}
-    # When the data is logged
+    # And a side effect to log one row of
     action = LogDataSideEffect(n=1)
+    # When the data is logged
     with caplog.at_level(logging.INFO):
         action.process(context)
     # Then the data should be in the logs
@@ -48,6 +47,4 @@ def test_log_data_action_dataframe(
     with caplog.at_level(logging.INFO):
         action.process(context)
     # Then the data should be in the logs
-    print("logs:")
-    print(caplog.text)
     assert "|val|" in caplog.text
