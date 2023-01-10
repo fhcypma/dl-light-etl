@@ -1,6 +1,6 @@
 [project]
 name = "dl_light_etl"
-version = "0.1.6"
+version = "0.1.7"
 authors = [
   { name="Frank Ypma", email="frank.ypma@ypma-data.nl" },
 ]

@@ -144,12 +144,14 @@ class CompositeEtlStep(EtlStep):
         default_output_alias: Optional[str] = None,
     ) -> None:
         super().__init__(default_input_aliases, default_output_alias)
+        self._inner_input_aliases = default_input_aliases
+        self._inner_output_alias = default_output_alias
         self.etl_steps = list(steps)
 
     def _execute(self, *args) -> Any:
         """Provides the etl result"""
         context: EtlContext = {
-            alias: arg for alias, arg in zip(self._input_aliases, args)
+            alias: arg for alias, arg in zip(self._inner_input_aliases, args)
         }  # Making shallow copy
 
         for step in self.etl_steps:
@@ -157,15 +159,27 @@ class CompositeEtlStep(EtlStep):
             context = step.process(context)
 
         if self._output_alias:
-            return context[self._output_alias]
+            return context[self._inner_output_alias]
 
     # Since _execute() has no defined signature, we cannot check the in- and output aliases
 
     def _validate_input_aliases(self):
-        pass
+        expected_n_params = len(self._inner_input_aliases)
+        actual_n_params = len(self._input_aliases)
+        if not expected_n_params == actual_n_params:
+            raise ValidationException(
+                f"EtlStep {type(self)} expects {expected_n_params} input aliases, but {actual_n_params} given"
+            )
 
     def _validate_output_alias(self):
-        pass
+        if self._output_alias and (not self._inner_output_alias):
+            raise ValidationException(
+                f"EtlStep {type(self)} has no output, but an alias was set"
+            )
+        if not self._output_alias and self._inner_output_alias:
+            raise ValidationException(
+                f"EtlStep {type(self)} has output, but no alias was set"
+            )
 
     def validate(self, context: DummyContext) -> DummyContext:
         """Checks if the correct aliases are passed around for all steps

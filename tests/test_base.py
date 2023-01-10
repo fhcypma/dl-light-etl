@@ -45,10 +45,10 @@ class AddThreeIntsTransformer(CompositeEtlStep):
     # Using weird input names to test the inner workings
     def __init__(self) -> None:
         super().__init__(
-            AddTwoIntsTransformer().on_aliases("foo", "bar").alias("intermediate"),
-            AddTwoIntsTransformer().on_aliases("intermediate", "baz").alias("qux"),
-            default_input_aliases=["foo", "bar", "baz"],
-            default_output_alias="qux",
+            AddTwoIntsTransformer().on_aliases("a", "b").alias("intermediate"),
+            AddTwoIntsTransformer().on_aliases("intermediate", "c").alias("out"),
+            default_input_aliases=["a", "b", "c"],
+            default_output_alias="out",
         )
 
 
@@ -181,7 +181,7 @@ def test_etl_step_output_alias_fail_none_expected():
 
 def test_composite_etl_step_process():
     # Given a composite etl step
-    step = AddThreeIntsTransformer()
+    step = AddThreeIntsTransformer().on_aliases("foo", "bar", "baz").alias("qux")
     # And an etl context
     context: EtlContext = {"foo": 1, "bar": 2, "baz": 3}
     # When the step is processed
@@ -194,12 +194,7 @@ def test_composite_etl_step_process():
 
 def test_composite_etl_step_validate():
     # Given a composite etl step
-    step = CompositeEtlStep(
-        AddTwoIntsTransformer().alias("intermediate"),
-        AddTwoIntsTransformer().on_aliases("intermediate", "c").alias("out"),
-        default_input_aliases=["a", "b", "c"],
-        default_output_alias="out",
-    )
+    step = AddThreeIntsTransformer()
     # And a dummy etl context
     context: EtlContext = {"a": int, "b": int, "c": int}
     # When the step is validated
