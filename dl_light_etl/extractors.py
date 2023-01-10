@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from pathlib import Path
 from types import FunctionType
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType

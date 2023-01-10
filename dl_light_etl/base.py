@@ -2,11 +2,10 @@ import logging
 from abc import abstractmethod
 from datetime import date, datetime
 from inspect import signature
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from dl_light_etl.errors import ValidationException
-from dl_light_etl.types import DateOrDatetime, EtlContext, DummyContext
-from dl_light_etl.utils.functional import fold_left
+from dl_light_etl.types import DateOrDatetime, DummyContext, EtlContext
 
 DEFAULT_DATA_KEY = "final_df"
 RUN_DATE = "dl_run_date"
