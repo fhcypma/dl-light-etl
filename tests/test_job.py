@@ -8,7 +8,7 @@ from pytest import LogCaptureFixture
 
 from dl_light_etl.base import EtlJob
 from dl_light_etl.errors import ValidationException
-from dl_light_etl.extractors import CsvExtractor, FunctionExtractor
+from dl_light_etl.plain_text.base import CsvExtractor, FunctionExtractor
 from dl_light_etl.loaders import ParquetLoader, TextFileLoader
 from dl_light_etl.side_effects.timing import (
     JOB_START_TIME,

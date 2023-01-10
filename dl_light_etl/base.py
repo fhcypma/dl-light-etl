@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from datetime import date, datetime
 from inspect import signature
-from typing import Any, List, Optional
+from typing import Any, List, Optional, FunctionType
 
 from dl_light_etl.errors import ValidationException
 from dl_light_etl.types import DateOrDatetime, DummyContext, EtlContext
@@ -223,3 +223,126 @@ class EtlJob(CompositeEtlStep):
         }
         super().validate(dummy_context)
         logging.info("Validation ok")
+
+
+class AbstractTransformer(EtlStep):
+    """Abstract class for generic data transformer"""
+
+    def __init__(self) -> None:
+        super().__init__(
+            default_input_aliases=[DEFAULT_DATA_KEY],
+            default_output_alias=DEFAULT_DATA_KEY,
+        )
+
+    @abstractmethod
+    def _execute(self, **kwargs) -> Any:
+        pass
+
+
+class AbstractExtractor(EtlStep):
+    """Abstract class for generic extractor"""
+
+    def __init__(self) -> None:
+        super().__init__(default_output_alias=DEFAULT_DATA_KEY)
+
+    @abstractmethod
+    def _execute(self, **kwargs) -> Any:
+        pass
+
+
+class FunctionExtractor(AbstractExtractor):
+    """Extractor that simply executes a given function
+
+    Can be wrapped around, e.g., http API services
+
+    :param FunctionType extraction_fct: The function to execute
+    :param **fct_params: The parameters to pass to the function
+    """
+
+    def __init__(self, extraction_fct: FunctionType, **fct_params) -> None:
+        super().__init__()
+        self.extraction_fct = extraction_fct
+        self.fct_params = fct_params
+
+    def _execute(self) -> Any:
+        """Extract the data
+
+        :returns: The extracted data
+        :rtype: Any
+        """
+        data = self.extraction_fct(**self.fct_params)
+        return data
+
+
+class AbstractLoader(EtlStep):
+    """Abstract class for saving a data object"""
+
+    def __init__(self) -> None:
+        super().__init__(default_input_aliases=[DEFAULT_DATA_KEY])
+
+    @abstractmethod
+    def _execute(self, **kwargs) -> None:
+        pass
+
+
+class AbstractSideEffect(EtlStep):
+    """Abstract class for geeneric side effect
+
+    Does not alter the etl context
+    Intended for log actions, etc.
+    """
+
+    def __init__(self, default_input_aliases: List[str]) -> None:
+        super().__init__(default_input_aliases)
+
+    @abstractmethod
+    def _execute(self, *args) -> None:
+        pass
+
+
+class SimpleDataValidationSideEffect(AbstractSideEffect):
+    """Validate one of the data objets"""
+
+    def __init__(
+        self,
+        validation_fct: FunctionType,
+        default_input_aliases: List[str] = [DEFAULT_DATA_KEY],
+    ) -> None:
+        super().__init__(default_input_aliases=default_input_aliases)
+        self.validation_fct = validation_fct
+
+    def _execute(self, *args) -> None:
+        self.validation_fct(*args)
+
+
+
+class AbstractValueGetter(EtlStep):
+    """Abstract class for producing some value"""
+
+    @abstractmethod
+    def _execute(self, *args) -> Any:
+        pass
+
+
+JOB_START_TIME = "job_start_time"
+
+
+class JobStartTimeGetter(AbstractValueGetter):
+    """Save the current time as the job_start_time"""
+
+    def __init__(self) -> None:
+        super().__init__(default_output_alias=JOB_START_TIME)
+
+    def _execute(self) -> datetime:
+        return datetime.now()
+
+
+class LogDurationSideEffect(AbstractSideEffect):
+    """Logs the duration since GetStartTime"""
+
+    def __init__(self) -> None:
+        super().__init__(default_input_aliases=[JOB_START_TIME])
+
+    def _execute(self, job_start_time: datetime) -> None:
+        duration = (datetime.now() - job_start_time).total_seconds()
+        logging.info(f"Job ran for {duration} seconds")

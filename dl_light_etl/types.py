@@ -9,11 +9,8 @@ EtlContext = Dict[str, Any]
 # Dummy variables holder; for validtion
 DummyContext = Dict[str, type]
 
-# Type for flat text file data
+# Type for flat text file data  TODO maybe replace tiwht pandas df?
 StringRecords = List[str]
-
-# Supported data types
-AnyDataType = Union[StringRecords, DataFrame]  # TODO add pandas dataframe?
 
 # For holding run_date or run_datetime, depending on job frequency
 DateOrDatetime = Union[datetime.date, datetime.datetime]

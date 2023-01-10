@@ -3,7 +3,7 @@ from pathlib import Path
 from pyspark.sql import Row, SparkSession
 from pyspark.sql.types import StringType, StructField, StructType
 
-from dl_light_etl.extractors import (
+from dl_light_etl.plain_text.base import (
     CsvExtractor,
     FunctionExtractor,
     TextExtractor,
