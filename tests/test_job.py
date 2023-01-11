@@ -6,16 +6,17 @@ import pytest
 from pyspark.sql import Row, SparkSession
 from pytest import LogCaptureFixture
 
-from dl_light_etl.base import EtlJob
-from dl_light_etl.errors import ValidationException
-from dl_light_etl.plain_text.base import CsvExtractor, FunctionExtractor
-from dl_light_etl.loaders import ParquetLoader, TextFileLoader
-from dl_light_etl.side_effects.timing import (
+from dl_light_etl.base import (
     JOB_START_TIME,
+    EtlJob,
+    FunctionExtractor,
     JobStartTimeGetter,
     LogDurationSideEffect,
 )
-from dl_light_etl.transformers import AddTechnicalFieldsTransformer, JoinTransformer
+from dl_light_etl.errors import ValidationException
+from dl_light_etl.plain_text.base import TextFileLoader
+from dl_light_etl.spark.base import *
+from dl_light_etl.spark.framework import AddTechnicalFieldsTransformer
 from dl_light_etl.types import StringRecords
 
 
@@ -39,18 +40,15 @@ def test_csv_join_to_parquet_spark_job(
         CsvExtractor(
             input_path=in_file_path1,
             header="true",
-        )
-        .alias("data"),
+        ).alias("data"),
         CsvExtractor(
             input_path=in_file_path2,
             header="true",
-        )
-        .alias("lookup"),
+        ).alias("lookup"),
         AddTechnicalFieldsTransformer()
         .on_aliases("data", JOB_START_TIME)
         .alias("data_enriched"),
-        JoinTransformer(on="id")
-        .on_aliases("data_enriched", "lookup"),
+        JoinTransformer(on="id").on_aliases("data_enriched", "lookup"),
         ParquetLoader(
             mode="overwrite",
             output_path=out_dir_path,
@@ -83,13 +81,9 @@ def test_csv_join_to_parquet_spark_job(
     # And the logs should show the execution flow
     assert "Validating job" in caplog.text
     assert "Starting job" in caplog.text
-    assert (
-        "Starting step <class 'dl_light_etl.side_effects.timing.JobStartTimeGetter'>"
-        in caplog.text
-    )
-    assert (
-        "Starting step <class 'dl_light_etl.extractors.CsvExtractor'>" in caplog.text
-    )
+    assert "JobStartTimeGetter" in caplog.text
+    assert "CsvExtractor" in caplog.text
+    assert "Job ran for " in caplog.text
     # Not checking all the others lines in the log...
 
 

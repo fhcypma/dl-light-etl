@@ -2,7 +2,8 @@ import logging
 from abc import abstractmethod
 from datetime import date, datetime
 from inspect import signature
-from typing import Any, List, Optional, FunctionType
+from typing import Any, List, Optional
+from types import FunctionType
 
 from dl_light_etl.errors import ValidationException
 from dl_light_etl.types import DateOrDatetime, DummyContext, EtlContext
@@ -11,6 +12,11 @@ DEFAULT_DATA_KEY = "final_df"
 RUN_DATE = "dl_run_date"
 RUN_TIME = "dl_run_time"
 PROTECTED_KEYS = [RUN_DATE, RUN_TIME]
+
+
+######################
+# Generic constructs #
+######################
 
 
 class EtlStep:
@@ -225,6 +231,11 @@ class EtlJob(CompositeEtlStep):
         logging.info("Validation ok")
 
 
+#####################
+# Abstract EtlSteps #
+#####################
+
+
 class AbstractTransformer(EtlStep):
     """Abstract class for generic data transformer"""
 
@@ -248,30 +259,6 @@ class AbstractExtractor(EtlStep):
     @abstractmethod
     def _execute(self, **kwargs) -> Any:
         pass
-
-
-class FunctionExtractor(AbstractExtractor):
-    """Extractor that simply executes a given function
-
-    Can be wrapped around, e.g., http API services
-
-    :param FunctionType extraction_fct: The function to execute
-    :param **fct_params: The parameters to pass to the function
-    """
-
-    def __init__(self, extraction_fct: FunctionType, **fct_params) -> None:
-        super().__init__()
-        self.extraction_fct = extraction_fct
-        self.fct_params = fct_params
-
-    def _execute(self) -> Any:
-        """Extract the data
-
-        :returns: The extracted data
-        :rtype: Any
-        """
-        data = self.extraction_fct(**self.fct_params)
-        return data
 
 
 class AbstractLoader(EtlStep):
@@ -300,6 +287,43 @@ class AbstractSideEffect(EtlStep):
         pass
 
 
+class AbstractValueGetter(EtlStep):
+    """Abstract class for producing some value"""
+
+    @abstractmethod
+    def _execute(self, *args) -> Any:
+        pass
+
+
+###########################
+# Generic implementations #
+###########################
+
+
+class FunctionExtractor(AbstractExtractor):
+    """Extractor that simply executes a given function
+
+    Can be wrapped around, e.g., http API services
+
+    :param FunctionType extraction_fct: The function to execute
+    :param **fct_params: The parameters to pass to the function
+    """
+
+    def __init__(self, extraction_fct: FunctionType, **fct_params) -> None:
+        super().__init__()
+        self.extraction_fct = extraction_fct
+        self.fct_params = fct_params
+
+    def _execute(self) -> Any:
+        """Extract the data
+
+        :returns: The extracted data
+        :rtype: Any
+        """
+        data = self.extraction_fct(**self.fct_params)
+        return data
+
+
 class SimpleDataValidationSideEffect(AbstractSideEffect):
     """Validate one of the data objets"""
 
@@ -313,15 +337,6 @@ class SimpleDataValidationSideEffect(AbstractSideEffect):
 
     def _execute(self, *args) -> None:
         self.validation_fct(*args)
-
-
-
-class AbstractValueGetter(EtlStep):
-    """Abstract class for producing some value"""
-
-    @abstractmethod
-    def _execute(self, *args) -> Any:
-        pass
 
 
 JOB_START_TIME = "job_start_time"

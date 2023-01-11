@@ -3,7 +3,7 @@ from pytest import LogCaptureFixture
 from datetime import date
 import logging
 
-from dl_light_etl.base import EtlStep, CompositeEtlStep, EtlJob
+from dl_light_etl.base import *
 from dl_light_etl.types import EtlContext, DummyContext
 from dl_light_etl.errors import ValidationException
 
@@ -209,11 +209,11 @@ def test_etl_job_process(caplog: LogCaptureFixture):
     # Given a job
     job = EtlJob(
         date(2022, 1, 1),
-        IntGenerator(1).alias("foo"),
-        IntGenerator(2).alias("bar"),
-        IntGenerator(3).alias("baz"),
+        IntGenerator(1).alias("a"),
+        IntGenerator(2).alias("b"),
+        IntGenerator(3).alias("c"),
         AddThreeIntsTransformer(),
-        LogIntTransformer().on_alias("qux"),
+        LogIntTransformer().on_alias("out"),
     )
     # When the job is processed
     with caplog.at_level(logging.INFO):
@@ -226,11 +226,11 @@ def test_etl_job_validate(caplog: LogCaptureFixture):
     # Given a correct job
     job = EtlJob(
         date(2022, 1, 1),
-        IntGenerator(1).alias("foo"),
-        IntGenerator(2).alias("bar"),
-        IntGenerator(3).alias("baz"),
+        IntGenerator(1).alias("a"),
+        IntGenerator(2).alias("b"),
+        IntGenerator(3).alias("c"),
         AddThreeIntsTransformer(),
-        LogIntTransformer().on_alias("qux"),
+        LogIntTransformer().on_alias("out"),
     )
     # When the job is validated
     # Then no exception should be raised
@@ -241,10 +241,10 @@ def test_etl_job_validate(caplog: LogCaptureFixture):
     assert "AddTwoIntsTransformer" in caplog.text
     assert "LogIntTransformer" in caplog.text
     # And the log should read all parameters
-    assert "parameter foo" in caplog.text
-    assert "parameter bar" in caplog.text
-    assert "parameter baz" in caplog.text
-    assert "parameter qux" in caplog.text
+    assert "parameter a" in caplog.text
+    assert "parameter b" in caplog.text
+    assert "parameter c" in caplog.text
+    assert "parameter out" in caplog.text
 
 
 def test_etl_job_validate_fail():
@@ -261,3 +261,46 @@ def test_etl_job_validate_fail():
     with pytest.raises(ValidationException) as e:
         job.validate()
         assert "b was not found in EtlContext" in str(e)
+
+
+def test_function_extractor():
+    # Given a function that returns a string
+    def greet(addressee: str) -> List[str]:
+        return ["hello", addressee]
+
+    # And a context
+    # When the function is wrapped in an extractor and the data is extracted
+    extractor = FunctionExtractor(greet, addressee="world").alias("out")
+    output_context = extractor.process({})
+    # Then the data should come from the function
+    assert output_context["out"] == ["hello", "world"]
+
+
+def test_log_time_action():
+    # Given the time
+    tic = datetime.now()
+    # And an empty context
+    context = {}
+    # And an etl step to set the job start time
+    step = JobStartTimeGetter()
+    # When the step is processed
+    out_context = step.process(context)
+    # Then the start time should be set
+    toc = datetime.now()
+    assert JOB_START_TIME in out_context
+    assert tic <= out_context[JOB_START_TIME]
+    assert out_context[JOB_START_TIME] <= toc
+
+
+def test_log_duration_side_effect(caplog: LogCaptureFixture):
+    # Given an etl context with a start time
+    start_time = datetime.now()
+    etl_context = {JOB_START_TIME: start_time}
+    # And an etl step to log the start time
+    step = LogDurationSideEffect()
+    # When step is processed
+    with caplog.at_level(logging.INFO):
+        output_parameters = step.process(etl_context)
+    # Then the log should hold the duration
+    assert f"Job ran for " in caplog.text
+    assert f" seconds" in caplog.text

@@ -2,9 +2,13 @@ import logging
 from pathlib import Path
 from typing import List, Union
 
-from dl_light_etl.base import (DEFAULT_DATA_KEY, AbstractExtractor,
-                               AbstractLoader, AbstractSideEffect,
-                               SimpleDataValidationSideEffect)
+from dl_light_etl.base import (
+    DEFAULT_DATA_KEY,
+    AbstractExtractor,
+    AbstractLoader,
+    AbstractSideEffect,
+    SimpleDataValidationSideEffect,
+)
 from dl_light_etl.errors import DataException
 from dl_light_etl.plain_text.filesystem import read_text_file, write_text_file
 from dl_light_etl.types import StringRecords
@@ -84,7 +88,7 @@ class RecordCountValidationSideEffect(SimpleDataValidationSideEffect):
     def __init__(self, expected_count: int) -> None:
         def validate_input_data(data_object: StringRecords) -> None:
             """Validate data on having exactly expected_count lines"""
-            actual_count = data_object.count()
+            actual_count = len(data_object)
             if actual_count != expected_count:
                 raise DataException(
                     f"DataFrame does not contain {expected_count} but {actual_count} records"

@@ -6,15 +6,20 @@ There should be no functions here that are specific to the custom framework
 import logging
 from abc import abstractmethod
 from pathlib import Path
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 
-from pyspark.sql import DataFrame, SparkSession, Column
+from pyspark.sql import Column, DataFrame, SparkSession
 from pyspark.sql.types import StructType
 
-from dl_light_etl.base import DEFAULT_DATA_KEY, AbstractExtractor, AbstractTransformer, AbstractLoader
+from dl_light_etl.base import (
+    DEFAULT_DATA_KEY,
+    AbstractExtractor,
+    AbstractLoader,
+    AbstractSideEffect,
+    AbstractTransformer,
+    SimpleDataValidationSideEffect,
+)
 from dl_light_etl.errors import DataException
-from dl_light_etl.side_effects.abstract import AbstractSideEffect
-from dl_light_etl.side_effects.validation import SimpleDataValidationSideEffect
 
 
 ##############
@@ -207,6 +212,4 @@ class LogDataSideEffect(AbstractSideEffect):
     def _execute(self, df: DataFrame) -> None:
         logging.info(f"Showing DataFrame {self._input_aliases[0]}:")
         df: DataFrame = df
-        logging.info(
-            "\n" + df._jdf.showString(self.n, self.truncate, self.vertical)
-        )
+        logging.info("\n" + df._jdf.showString(self.n, self.truncate, self.vertical))
