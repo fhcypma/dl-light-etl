@@ -95,7 +95,9 @@ class EtlStep:
                     f"Key {parameter_alias} was not found in EtlContext"
                 )
             actual_type = context[parameter_alias]
-            if parameter_type == Any:
+            if parameter_type == actual_type:
+                pass
+            elif parameter_type == Any:
                 logging.warning(
                     f"Expecting parameter {parameter_alias} of type Any for this EtlStep. Please see if you can narrow down the typing."
                 )
