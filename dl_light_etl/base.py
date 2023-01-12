@@ -87,7 +87,11 @@ class EtlStep:
                     f"Key {parameter_alias} was not found in EtlContext"
                 )
             actual_type = context[parameter_alias]
-            if not issubclass(actual_type, parameter_type):
+            if parameter_type == Any:
+                logging.warning(f"Expecting parameter {parameter_alias} of type Any for this EtlStep. Please see if you can narrow down the typing.")
+            elif actual_type == Any:
+                logging.warning(f"Found parameter {parameter_alias} of type Any. Allowing this, but could fail during process()")
+            elif not issubclass(actual_type, parameter_type):
                 raise ValidationException(
                     f"Key {parameter_alias} in EtlContext is of type {context[parameter_alias]}, but {parameter_type} required"
                 )
