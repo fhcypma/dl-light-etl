@@ -306,6 +306,18 @@ def test_function_extractor():
     assert output_context["out"] == ["hello", "world"]
 
 
+def test_function_extractor_validate():
+    # Given a function that returns a string
+    def greet(addressee: str) -> List[str]:
+        return ["hello", addressee]
+
+    # When the function is wrapped in an extractor and the data is extracted
+    extractor = FunctionExtractor(greet, addressee="world").alias("out")
+    output_context = extractor.validate({})
+    # Then the data should come from the function
+    assert output_context["out"] == List[str]
+
+
 def test_log_time_action():
     # Given the time
     tic = datetime.now()

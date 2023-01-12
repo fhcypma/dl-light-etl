@@ -345,6 +345,15 @@ class FunctionExtractor(AbstractExtractor):
     def signature(self):
         return signature(self.extraction_fct)
 
+    # Need to test input aliases on the fct_params
+    def _validate_input_aliases(self) -> None:
+        expected_n_params = len(self.signature.parameters.values())
+        actual_n_params = len(self.fct_params)  # Only difference from super()
+        if not expected_n_params == actual_n_params:
+            raise ValidationException(
+                f"EtlStep {type(self)} expects {expected_n_params} input aliases, but {actual_n_params} given"
+            )
+
 
 class SimpleDataValidationSideEffect(AbstractSideEffect):
     """Validate one of the data objets"""
