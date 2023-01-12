@@ -10,7 +10,6 @@ from dl_light_etl.base import (
     RUN_TIME,
     AbstractTransformer,
 )
-from dl_light_etl.types import DateOrDatetime
 
 
 class AddTechnicalFieldsTransformer(AbstractTransformer):
