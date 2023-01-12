@@ -52,11 +52,29 @@ class AddThreeIntsTransformer(CompositeEtlStep):
         )
 
 
-class DoNothingStep(EtlStep):
-    """Simple EtlStep that does really nothing"""
+class Animal:
+    pass
+
+
+class Dog(Animal):
+    pass
+
+
+class PetTheAnimal(AbstractSideEffect):
+    """SideEffect that requires an input of type Animal"""
 
     def __init__(self) -> None:
-        super().__init__(default_input_aliases=[], default_output_alias=None)
+        super().__init__(default_input_aliases=["a"])
+
+    def _execute(self, animal: Animal) -> None:
+        logging.info("That's nice of you")
+
+
+class DoNothing(AbstractSideEffect):
+    """SideEffect that does really nothing"""
+
+    def __init__(self) -> None:
+        super().__init__(default_input_aliases=[])
 
     def _execute(self) -> None:
         pass
@@ -99,6 +117,16 @@ def test_etl_step_validate_fail():
         step.validate(context)
 
 
+def test_etl_step_validate_subtype_ok():
+    # Given an etl step with input type Animal
+    step = PetTheAnimal()
+    # And a dummy context that does not match the _execute function
+    context: DummyContext = {"a": Dog}  # Dog is subtype of Animal
+    # When the step is validated
+    # Then no exception is raised
+    step.validate(context)
+
+
 def test_etl_step_has_output():
     # Given an etl step with output
     step = AddTwoIntsTransformer()
@@ -110,7 +138,7 @@ def test_etl_step_has_output():
 
 def test_etl_step_has_no_output():
     # Given an etl step with no output
-    step = DoNothingStep()
+    step = DoNothing()
     # When the has_output runs
     has_output = step.has_output
     # Then it should be true
@@ -139,7 +167,7 @@ def test_etl_step_validate_fail_incorrect_number_input_aliases():
 
 def test_etl_step_set_input_aliases_fail_none_expected():
     # Given an etl step with too many input aliases
-    step = DoNothingStep().on_aliases("a")
+    step = DoNothing().on_aliases("a")
     # And a dummy context
     context: DummyContext = {}
     # When the step is validated
@@ -170,7 +198,7 @@ def test_etl_step_output_alias_fail_none_set():
 
 def test_etl_step_output_alias_fail_none_expected():
     # Given an etl step with no output, but with an output alias
-    step = DoNothingStep().alias("x")
+    step = DoNothing().alias("x")
     # And a dummy context
     context: DummyContext = {}
     # When the step is validated

@@ -54,6 +54,7 @@ class EtlStep:
 
         Is called by the process() method
         Be very strict on the type annotations when implementating this method
+        Any should never be used as input parameter type; it will fail validation
         """
         pass
 
@@ -85,7 +86,8 @@ class EtlStep:
                 raise ValidationException(
                     f"Key {parameter_alias} was not found in EtlContext"
                 )
-            if context[parameter_alias] != parameter_type:
+            actual_type = context[parameter_alias]
+            if not issubclass(actual_type, parameter_type):
                 raise ValidationException(
                     f"Key {parameter_alias} in EtlContext is of type {context[parameter_alias]}, but {parameter_type} required"
                 )
