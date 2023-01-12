@@ -61,7 +61,10 @@ class Dog(Animal):
 
 
 class PetTheAnimal(EtlStep):
-    """SideEffect that requires an input of type Animal"""
+    """SideEffect that requires an input of type Animal
+
+    Used for validating the subclass
+    """
 
     def __init__(self) -> None:
         super().__init__(default_input_aliases=["a"])
@@ -295,6 +298,7 @@ def test_function_extractor():
     # Given a function that returns a string
     def greet(addressee: str) -> List[str]:
         return ["hello", addressee]
+
     # When the function is wrapped in an extractor and the data is extracted
     extractor = FunctionExtractor(greet, addressee="world").alias("out")
     output_context = extractor.process({})

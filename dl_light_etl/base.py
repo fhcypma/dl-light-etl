@@ -61,7 +61,7 @@ class EtlStep:
     @property
     def signature(self):
         """Gets signature of this EtlStep
-        
+
         Can be overridden if execute function is generic
         """
         return signature(self._execute)
@@ -96,9 +96,13 @@ class EtlStep:
                 )
             actual_type = context[parameter_alias]
             if parameter_type == Any:
-                logging.warning(f"Expecting parameter {parameter_alias} of type Any for this EtlStep. Please see if you can narrow down the typing.")
+                logging.warning(
+                    f"Expecting parameter {parameter_alias} of type Any for this EtlStep. Please see if you can narrow down the typing."
+                )
             elif actual_type == Any:
-                logging.warning(f"Found parameter {parameter_alias} of type Any. Allowing this, but could fail during process()")
+                logging.warning(
+                    f"Found parameter {parameter_alias} of type Any. Allowing this, but could fail during process()"
+                )
             elif not issubclass(actual_type, parameter_type):
                 raise ValidationException(
                     f"Key {parameter_alias} in EtlContext is of type {context[parameter_alias]}, but {parameter_type} required"
@@ -313,6 +317,7 @@ class AbstractValueGetter(EtlStep):
 # Generic implementations #
 ###########################
 
+
 class FunctionExtractor(AbstractExtractor):
     """Extractor that simply executes a given function
 
@@ -339,6 +344,7 @@ class FunctionExtractor(AbstractExtractor):
     @property
     def signature(self):
         return signature(self.extraction_fct)
+
 
 class SimpleDataValidationSideEffect(AbstractSideEffect):
     """Validate one of the data objets"""
