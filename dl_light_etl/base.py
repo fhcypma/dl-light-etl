@@ -236,6 +236,9 @@ class EtlJob(CompositeEtlStep):
             assert type(run_date_or_time) == datetime
             self.context[RUN_TIME] = run_date_or_time
 
+        self._input_aliases = self.context.keys()
+        self._inner_input_aliases = self.context.keys()
+
     def process(self) -> None:
         self.validate()
         logging.info("Starting job")
