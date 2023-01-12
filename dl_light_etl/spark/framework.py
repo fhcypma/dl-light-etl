@@ -24,7 +24,7 @@ class AddTechnicalFieldsTransformer(AbstractTransformer):
 
     def __init__(self) -> None:
         super().__init__()
-        self._input_keys = [DEFAULT_DATA_KEY, JOB_START_TIME]
+        self._input_aliases = [DEFAULT_DATA_KEY, JOB_START_TIME]
 
     def _execute(self, df: DataFrame, job_start_time: datetime) -> DataFrame:
         df = df.withColumn("dl_ingestion_time", f.lit(job_start_time)).withColumn(
@@ -33,10 +33,25 @@ class AddTechnicalFieldsTransformer(AbstractTransformer):
         return df
 
 
-class AddRunDateOrTimeTransformer(AbstractTransformer):
+class AddRunDateTransformer(AbstractTransformer):
     """Adds dl_run_date or dl_run_time to the DataFrame"""
 
-    def _execute(self, df: DataFrame, run_date_or_time: DateOrDatetime) -> DataFrame:
-        col_name = RUN_DATE if type(run_date_or_time) == date else RUN_TIME
-        df = df.withColumn(col_name, f.lit(run_date_or_time))
+    def __init__(self) -> None:
+        super().__init__()
+        self._input_aliases = [DEFAULT_DATA_KEY, RUN_DATE]
+
+    def _execute(self, df: DataFrame, run_date: date) -> DataFrame:
+        df = df.withColumn(RUN_DATE, f.lit(run_date))
+        return df
+
+
+class AddRunTimeTransformer(AbstractTransformer):
+    """Adds dl_run_date or dl_run_time to the DataFrame"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._input_aliases = [DEFAULT_DATA_KEY, RUN_TIME]
+
+    def _execute(self, df: DataFrame, run_time: datetime) -> DataFrame:
+        df = df.withColumn(RUN_TIME, f.lit(run_time))
         return df
