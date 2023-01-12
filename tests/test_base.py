@@ -60,7 +60,7 @@ class Dog(Animal):
     pass
 
 
-class PetTheAnimal(AbstractSideEffect):
+class PetTheAnimal(EtlStep):
     """SideEffect that requires an input of type Animal"""
 
     def __init__(self) -> None:
@@ -70,7 +70,7 @@ class PetTheAnimal(AbstractSideEffect):
         logging.info("That's nice of you")
 
 
-class DoNothing(AbstractSideEffect):
+class DoNothing(EtlStep):
     """SideEffect that does really nothing"""
 
     def __init__(self) -> None:
@@ -295,8 +295,6 @@ def test_function_extractor():
     # Given a function that returns a string
     def greet(addressee: str) -> List[str]:
         return ["hello", addressee]
-
-    # And a context
     # When the function is wrapped in an extractor and the data is extracted
     extractor = FunctionExtractor(greet, addressee="world").alias("out")
     output_context = extractor.process({})

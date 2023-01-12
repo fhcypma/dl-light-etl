@@ -2,8 +2,8 @@ import logging
 from abc import abstractmethod
 from datetime import date, datetime
 from inspect import signature
-from typing import Any, List, Optional
 from types import FunctionType
+from typing import Any, List, Optional
 
 from dl_light_etl.errors import ValidationException
 from dl_light_etl.types import DateOrDatetime, DummyContext, EtlContext
@@ -58,6 +58,14 @@ class EtlStep:
         """
         pass
 
+    @property
+    def signature(self):
+        """Gets signature of this EtlStep
+        
+        Can be overridden if execute function is generic
+        """
+        return signature(self._execute)
+
     def process(self, context: EtlContext) -> EtlContext:
         """Processes the result of the step into the EtlContext
 
@@ -74,7 +82,7 @@ class EtlStep:
         """Validates if the passed types match the annotations of the execute() method"""
         self._validate_input_aliases()
         self._validate_output_alias()
-        sig = signature(self._execute)
+        sig = self.signature
         for parameter_alias, parameter in zip(
             self._input_aliases, sig.parameters.values()
         ):
@@ -118,7 +126,7 @@ class EtlStep:
         return self
 
     def _validate_input_aliases(self) -> None:
-        expected_n_params = len(signature(self._execute).parameters.values())
+        expected_n_params = len(self.signature.parameters.values())
         actual_n_params = len(self._input_aliases)
         if not expected_n_params == actual_n_params:
             raise ValidationException(
@@ -131,12 +139,12 @@ class EtlStep:
         return self
 
     def _validate_output_alias(self) -> None:
-        expected_retrun_type = signature(self._execute).return_annotation
-        if not expected_retrun_type and self._output_alias:
+        expected_return_type = self.signature.return_annotation
+        if not expected_return_type and self._output_alias:
             raise ValidationException(
                 f"EtlStep {type(self)} has no output, but an alias was set"
             )
-        if expected_retrun_type and (not self._output_alias):
+        if expected_return_type and (not self._output_alias):
             raise ValidationException(
                 f"EtlStep {type(self)} has output, but no alias was set"
             )
@@ -305,7 +313,6 @@ class AbstractValueGetter(EtlStep):
 # Generic implementations #
 ###########################
 
-
 class FunctionExtractor(AbstractExtractor):
     """Extractor that simply executes a given function
 
@@ -329,6 +336,9 @@ class FunctionExtractor(AbstractExtractor):
         data = self.extraction_fct(**self.fct_params)
         return data
 
+    @property
+    def signature(self):
+        return signature(self.extraction_fct)
 
 class SimpleDataValidationSideEffect(AbstractSideEffect):
     """Validate one of the data objets"""
