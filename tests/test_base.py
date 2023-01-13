@@ -1,11 +1,12 @@
+import logging
+from datetime import date
+
 import pytest
 from pytest import LogCaptureFixture
-from datetime import date
-import logging
 
 from dl_light_etl.base import *
-from dl_light_etl.types import EtlContext, DummyContext
 from dl_light_etl.errors import ValidationException
+from dl_light_etl.types import DummyContext, EtlContext
 
 
 class IntGenerator(EtlStep):
@@ -239,7 +240,7 @@ def test_composite_etl_step_validate():
 def test_etl_job_process(caplog: LogCaptureFixture):
     # Given a job
     job = EtlJob(
-        date(2022, 1, 1),
+        {},
         IntGenerator(1).alias("a"),
         IntGenerator(2).alias("b"),
         IntGenerator(3).alias("c"),
@@ -256,7 +257,7 @@ def test_etl_job_process(caplog: LogCaptureFixture):
 def test_etl_job_validate(caplog: LogCaptureFixture):
     # Given a correct job
     job = EtlJob(
-        date(2022, 1, 1),
+        {},
         IntGenerator(1).alias("a"),
         IntGenerator(2).alias("b"),
         IntGenerator(3).alias("c"),
@@ -281,7 +282,7 @@ def test_etl_job_validate(caplog: LogCaptureFixture):
 def test_etl_job_validate_fail():
     # Given a correct job
     job = EtlJob(
-        date(2022, 1, 1),
+        {},
         IntGenerator(1).alias("a"),
         IntGenerator(2).alias("wrong!"),
         AddTwoIntsTransformer(),
@@ -324,7 +325,7 @@ def test_log_time_action():
     # And an empty context
     context = {}
     # And an etl step to set the job start time
-    step = JobStartTimeGetter()
+    step = SetJobStartTime()
     # When the step is processed
     out_context = step.process(context)
     # Then the start time should be set

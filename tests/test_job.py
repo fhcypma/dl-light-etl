@@ -6,13 +6,8 @@ import pytest
 from pyspark.sql import Row, SparkSession
 from pytest import LogCaptureFixture
 
-from dl_light_etl.base import (
-    JOB_START_TIME,
-    EtlJob,
-    FunctionExtractor,
-    JobStartTimeGetter,
-    LogDurationSideEffect,
-)
+from dl_light_etl.base import (RUN_DATE, JOB_START_TIME, TimedEtlJob, EtlJob, FunctionExtractor,
+                               LogDurationSideEffect, SetJobStartTime)
 from dl_light_etl.errors import ValidationException
 from dl_light_etl.plain_text.base import TextFileLoader
 from dl_light_etl.spark.base import *
@@ -34,9 +29,10 @@ def test_csv_join_to_parquet_spark_job(
     in_file_path2.write_text(input_data2)
     # And a job that joins the data and writes it to parquet
     out_dir_path = rand_dir_path / "out"
-    job = EtlJob(
-        date(2022, 1, 1),
-        JobStartTimeGetter(),
+    job = TimedEtlJob(
+        {
+            RUN_DATE: date(2022, 1, 1),
+        },
         CsvExtractor(
             input_path=in_file_path1,
             header="true",
@@ -48,12 +44,12 @@ def test_csv_join_to_parquet_spark_job(
         AddTechnicalFieldsTransformer()
         .on_aliases("data", JOB_START_TIME)
         .alias("data_enriched"),
-        JoinTransformer(on="id").on_aliases("data_enriched", "lookup"),
+        JoinTransformer(on="id")
+        .on_aliases("data_enriched", "lookup"),
         ParquetLoader(
             mode="overwrite",
             output_path=out_dir_path,
         ),
-        LogDurationSideEffect(),
     )
     # When the job is validated
     job.validate()
@@ -81,8 +77,8 @@ def test_csv_join_to_parquet_spark_job(
     # And the logs should show the execution flow
     assert "Validating job" in caplog.text
     assert "Starting job" in caplog.text
-    assert "JobStartTimeGetter" in caplog.text
     assert "CsvExtractor" in caplog.text
+    # And the LogDurationSideEffect should log the duration
     assert "Job ran for " in caplog.text
     # Not checking all the others lines in the log...
 
@@ -93,7 +89,7 @@ def test_incorrect_key_fail(rand_path: Path):
         return ["hello", "world"]
 
     job = EtlJob(
-        date(2022, 1, 1),
+        {},
         FunctionExtractor(generate_data).alias("foo"),
         TextFileLoader(rand_path).on_alias("bar"),
     )

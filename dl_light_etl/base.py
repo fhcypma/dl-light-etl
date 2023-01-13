@@ -224,20 +224,15 @@ class CompositeEtlStep(EtlStep):
 
 
 class EtlJob(CompositeEtlStep):
-    """Etl Job; has not input other than the run date, and no outputs"""
+    """Etl Job. Inputs can be provided as a dict.
+    
+    It wouod be common to have the run_date passed in the context, as
+    {RUN_DATE: run_date}
+    """
 
-    def __init__(self, run_date_or_time: DateOrDatetime, *steps: EtlStep) -> None:
+    def __init__(self, context: EtlContext, *steps: EtlStep) -> None:
         super().__init__(*steps)
-
-        self.context: EtlContext = {}
-        if type(run_date_or_time) == date:
-            self.context[RUN_DATE] = run_date_or_time
-        else:
-            assert type(run_date_or_time) == datetime
-            self.context[RUN_TIME] = run_date_or_time
-
-        self._input_aliases = self.context.keys()
-        self._inner_input_aliases = self.context.keys()
+        self.context = context
 
     def process(self) -> None:
         self.validate()
@@ -252,6 +247,15 @@ class EtlJob(CompositeEtlStep):
         }
         super().validate(dummy_context)
         logging.info("Validation ok")
+
+
+class TimedEtlJob(EtlJob):
+    """Etl Job with JOB_START_TIME set"""
+
+    def __init__(self, context: EtlContext, *steps: EtlStep) -> None:
+        all_steps = [SetJobStartTime()] + list(steps) + [LogDurationSideEffect()]
+
+        super().__init__(context, *all_steps)
 
 
 #####################
@@ -378,7 +382,7 @@ class SimpleDataValidationSideEffect(AbstractSideEffect):
 JOB_START_TIME = "job_start_time"
 
 
-class JobStartTimeGetter(AbstractValueGetter):
+class SetJobStartTime(AbstractValueGetter):
     """Save the current time as the job_start_time"""
 
     def __init__(self) -> None:
@@ -397,3 +401,23 @@ class LogDurationSideEffect(AbstractSideEffect):
     def _execute(self, job_start_time: datetime) -> None:
         duration = (datetime.now() - job_start_time).total_seconds()
         logging.info(f"Job ran for {duration} seconds")
+
+
+class SetRunDate(AbstractValueGetter):
+    """Save the provided run date"""
+    def __init__(self, run_date: date) -> None:
+        super().__init__(default_output_alias=RUN_DATE)
+        self.run_date = run_date
+
+    def _execute(self) -> date:
+        return self.run_date
+
+
+class SetRunTime(AbstractValueGetter):
+    """Save the provided run datetime"""
+    def __init__(self, run_time: datetime) -> None:
+        super().__init__(default_output_alias=RUN_TIME)
+        self.run_time = run_time
+
+    def _execute(self) -> date:
+        return self.run_time

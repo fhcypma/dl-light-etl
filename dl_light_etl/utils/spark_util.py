@@ -4,14 +4,15 @@ from pyspark.sql import SparkSession
 
 
 def create_spark_session(
-    app_name: str, log_level: str = "WARN", config: Dict[str, str] = None
+    log_level: str = None, config: Dict[str, str] = None
 ) -> SparkSession:
     """Create spark session for local or Lambda use"""
     logging.info(f"Spark config: {config}")
-    spark_builder = SparkSession.builder.appName(app_name)
+    spark_builder = SparkSession.builder
     [spark_builder := spark_builder.config(k, v) for k, v in config.items()]
 
     spark = spark_builder.getOrCreate()
+    log_level = log_level or "WARN"
     spark.sparkContext.setLogLevel(log_level)
     return spark
 
