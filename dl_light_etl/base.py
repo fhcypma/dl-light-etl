@@ -6,7 +6,7 @@ from types import FunctionType
 from typing import Any, List, Optional
 
 from dl_light_etl.errors import ValidationException
-from dl_light_etl.types import DateOrDatetime, DummyContext, EtlContext
+from dl_light_etl.types import DummyContext, EtlContext
 
 DEFAULT_DATA_KEY = "final_df"
 RUN_DATE = "dl_run_date"
@@ -225,7 +225,7 @@ class CompositeEtlStep(EtlStep):
 
 class EtlJob(CompositeEtlStep):
     """Etl Job. Inputs can be provided as a dict.
-    
+
     It wouod be common to have the run_date passed in the context, as
     {RUN_DATE: run_date}
     """
@@ -405,6 +405,7 @@ class LogDurationSideEffect(AbstractSideEffect):
 
 class SetRunDate(AbstractValueGetter):
     """Save the provided run date"""
+
     def __init__(self, run_date: date) -> None:
         super().__init__(default_output_alias=RUN_DATE)
         self.run_date = run_date
@@ -415,6 +416,7 @@ class SetRunDate(AbstractValueGetter):
 
 class SetRunTime(AbstractValueGetter):
     """Save the provided run datetime"""
+
     def __init__(self, run_time: datetime) -> None:
         super().__init__(default_output_alias=RUN_TIME)
         self.run_time = run_time

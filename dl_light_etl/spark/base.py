@@ -6,22 +6,17 @@ There should be no functions here that are specific to the custom framework
 import logging
 from abc import abstractmethod
 from pathlib import Path
-from typing import List, Optional, Union, Dict, Any
+from typing import Any, Dict, List
 
 from pyspark.sql import Column, DataFrame, SparkSession
 from pyspark.sql.types import StructType
 
-from dl_light_etl.base import (
-    DEFAULT_DATA_KEY,
-    AbstractExtractor,
-    AbstractLoader,
-    AbstractSideEffect,
-    AbstractTransformer,
-    SimpleDataValidationSideEffect,
-)
-from dl_light_etl.utils.spark_util import create_spark_session
+from dl_light_etl.base import (DEFAULT_DATA_KEY, AbstractExtractor,
+                               AbstractLoader, AbstractSideEffect,
+                               AbstractTransformer,
+                               SimpleDataValidationSideEffect)
 from dl_light_etl.errors import DataException
-
+from dl_light_etl.utils.spark_util import create_spark_session
 
 ##############
 # Extractors #
@@ -195,7 +190,7 @@ class GetOrCreateSparkSession(AbstractSideEffect):
         create_spark_session(
             log_level=spark_config.get("log_level"),
             config=spark_config,
-            )
+        )
 
 
 class RecordCountValidationSideEffect(SimpleDataValidationSideEffect):

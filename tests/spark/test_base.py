@@ -146,9 +146,7 @@ def test_parquet_loader(spark_session: SparkSession, rand_path: Path):
 
 def test_get_or_create_spark_session(spark_session: SparkSession):
     # Given an etl context with spark config settings
-    context = {SPARK_CONFIG: {
-        "spark.app.name": "TestApp"
-    }}
+    context = {SPARK_CONFIG: {"spark.app.name": "TestApp"}}
     # And an etl step to get or create the spark session
     step = GetOrCreateSparkSession()
     # When the step is processed

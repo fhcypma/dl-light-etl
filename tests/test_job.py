@@ -6,8 +6,15 @@ import pytest
 from pyspark.sql import Row, SparkSession
 from pytest import LogCaptureFixture
 
-from dl_light_etl.base import (RUN_DATE, JOB_START_TIME, TimedEtlJob, EtlJob, FunctionExtractor,
-                               LogDurationSideEffect, SetJobStartTime)
+from dl_light_etl.base import (
+    RUN_DATE,
+    JOB_START_TIME,
+    TimedEtlJob,
+    EtlJob,
+    FunctionExtractor,
+    LogDurationSideEffect,
+    SetJobStartTime,
+)
 from dl_light_etl.errors import ValidationException
 from dl_light_etl.plain_text.base import TextFileLoader
 from dl_light_etl.spark.base import *
@@ -44,8 +51,7 @@ def test_csv_join_to_parquet_spark_job(
         AddTechnicalFieldsTransformer()
         .on_aliases("data", JOB_START_TIME)
         .alias("data_enriched"),
-        JoinTransformer(on="id")
-        .on_aliases("data_enriched", "lookup"),
+        JoinTransformer(on="id").on_aliases("data_enriched", "lookup"),
         ParquetLoader(
             mode="overwrite",
             output_path=out_dir_path,

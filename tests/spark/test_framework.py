@@ -3,7 +3,11 @@ from datetime import datetime
 from pyspark.sql import SparkSession
 
 from dl_light_etl.base import RUN_DATE, RUN_TIME
-from dl_light_etl.spark.framework import AddTechnicalFieldsTransformer, AddRunDateTransformer, AddRunTimeTransformer
+from dl_light_etl.spark.framework import (
+    AddTechnicalFieldsTransformer,
+    AddRunDateTransformer,
+    AddRunTimeTransformer,
+)
 
 
 def test_add_technical_fields_transformer(spark_session: SparkSession):
