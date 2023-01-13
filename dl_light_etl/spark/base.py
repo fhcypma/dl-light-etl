@@ -22,6 +22,7 @@ from dl_light_etl.base import (
 from dl_light_etl.errors import DataException
 from dl_light_etl.utils.spark_util import create_spark_session
 
+
 ##############
 # Extractors #
 ##############

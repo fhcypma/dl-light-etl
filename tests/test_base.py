@@ -237,10 +237,9 @@ def test_composite_etl_step_validate():
     assert context == {"a": int, "b": int, "c": int}
 
 
-def test_etl_job_process(caplog: LogCaptureFixture):
+def test_etl_job_run(caplog: LogCaptureFixture):
     # Given a job
     job = EtlJob(
-        {},
         IntGenerator(1).alias("a"),
         IntGenerator(2).alias("b"),
         IntGenerator(3).alias("c"),
@@ -249,7 +248,7 @@ def test_etl_job_process(caplog: LogCaptureFixture):
     )
     # When the job is processed
     with caplog.at_level(logging.INFO):
-        job.process()
+        job.run()
     # Then that last transformer should have printed something to the log
     assert "Int is: 6" in caplog.text
 
@@ -257,7 +256,6 @@ def test_etl_job_process(caplog: LogCaptureFixture):
 def test_etl_job_validate(caplog: LogCaptureFixture):
     # Given a correct job
     job = EtlJob(
-        {},
         IntGenerator(1).alias("a"),
         IntGenerator(2).alias("b"),
         IntGenerator(3).alias("c"),
@@ -282,7 +280,6 @@ def test_etl_job_validate(caplog: LogCaptureFixture):
 def test_etl_job_validate_fail():
     # Given a correct job
     job = EtlJob(
-        {},
         IntGenerator(1).alias("a"),
         IntGenerator(2).alias("wrong!"),
         AddTwoIntsTransformer(),

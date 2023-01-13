@@ -224,29 +224,34 @@ class CompositeEtlStep(EtlStep):
 
 
 class EtlJob(CompositeEtlStep):
-    """Etl Job. Inputs can be provided as a dict.
+    """Etl Job. Execute with validate_and_run()"""
 
-    It wouod be common to have the run_date passed in the context, as
-    {RUN_DATE: run_date}
-    """
-
-    def __init__(self, context: EtlContext, *steps: EtlStep) -> None:
+    def __init__(self, *steps: EtlStep) -> None:
         super().__init__(*steps)
-        self.context = context
 
-    def process(self) -> None:
-        self.validate()
-        logging.info("Starting job")
-        super().process(self.context)
-        logging.info("Job completed")
+    def validate(self, context: EtlContext = {}) -> None:
+        """Validate the job, passing the context as input
 
-    def validate(self) -> None:
+        A common context would be
+        context=(RUN_DATE: run_date}
+        """
+
         logging.info("Validating job")
-        dummy_context: DummyContext = {
-            key: type(val) for key, val in self.context.items()
-        }
+        dummy_context: DummyContext = {key: type(val) for key, val in context.items()}
         super().validate(dummy_context)
         logging.info("Validation ok")
+
+    def run(self, context: EtlContext = {}) -> None:
+        """Validate and run this job, passing the contexte as input
+
+        A common context would be
+        context=(RUN_DATE: run_date}
+        """
+
+        self.validate(context)
+        logging.info("Starting job")
+        super().process(context)
+        logging.info("Job completed")
 
 
 class TimedEtlJob(EtlJob):

@@ -37,9 +37,6 @@ def test_csv_join_to_parquet_spark_job(
     # And a job that joins the data and writes it to parquet
     out_dir_path = rand_dir_path / "out"
     job = TimedEtlJob(
-        {
-            RUN_DATE: date(2022, 1, 1),
-        },
         CsvExtractor(
             input_path=in_file_path1,
             header="true",
@@ -57,13 +54,13 @@ def test_csv_join_to_parquet_spark_job(
             output_path=out_dir_path,
         ),
     )
-    # When the job is validated
-    job.validate()
+    # And a context holding the run_date
+    context = {RUN_DATE: date(2022, 1, 1)}
+    # When the job is ran
     # Then there should not be an exception
-    # And when the job is executed
     with caplog.at_level(logging.INFO):
-        job.process()
-    # Then there should be a parquet filecreated
+        job.run(context)
+    # And there should be a parquet filecreated
     out_files = list(out_dir_path.glob("*.parquet"))
     assert len(out_files) == 1
     # And it should contain the data
@@ -95,7 +92,6 @@ def test_incorrect_key_fail(rand_path: Path):
         return ["hello", "world"]
 
     job = EtlJob(
-        {},
         FunctionExtractor(generate_data).alias("foo"),
         TextFileLoader(rand_path).on_alias("bar"),
     )
