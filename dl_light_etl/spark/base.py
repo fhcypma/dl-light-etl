@@ -6,7 +6,7 @@ There should be no functions here that are specific to the custom framework
 import logging
 from abc import abstractmethod
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Union
 
 from pyspark.sql import Column, DataFrame, SparkSession
 from pyspark.sql.types import StructType
