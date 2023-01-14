@@ -300,11 +300,11 @@ def test_etl_job_validate_fail():
 
 def test_function_extractor():
     # Given a function that returns a string
-    def greet() -> List[str]:
-        return ["hello", "world"]
+    def greet(name: str) -> List[str]:
+        return ["hello", name]
 
     # When the function is wrapped in an extractor and the data is extracted
-    extractor = FunctionExtractor(greet).alias("out")
+    extractor = FunctionExtractor(greet, name="world").alias("out")
     output_context = extractor.process({})
     # Then the data should come from the function
     assert output_context["out"] == ["hello", "world"]

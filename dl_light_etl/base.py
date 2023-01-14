@@ -286,7 +286,7 @@ class AbstractTransformer(EtlStep):
         )
 
     @abstractmethod
-    def _execute(self, **kwargs) -> Any:
+    def _execute(self, *args) -> Any:
         pass
 
 
@@ -297,7 +297,7 @@ class AbstractExtractor(EtlStep):
         super().__init__(default_output_alias=DEFAULT_DATA_KEY)
 
     @abstractmethod
-    def _execute(self, **kwargs) -> Any:
+    def _execute(self, *args) -> Any:
         pass
 
 
@@ -308,7 +308,7 @@ class AbstractLoader(EtlStep):
         super().__init__(default_input_aliases=[DEFAULT_DATA_KEY])
 
     @abstractmethod
-    def _execute(self, **kwargs) -> None:
+    def _execute(self, *args) -> None:
         pass
 
 
@@ -348,12 +348,10 @@ class FunctionExtractor(AbstractExtractor):
     :param FunctionType extraction_fct: The function to execute
     """
 
-    def __init__(
-        self, extraction_fct: FunctionType, default_input_aliases: List[str] = []
-    ) -> None:
+    def __init__(self, extraction_fct: FunctionType, **fct_params) -> None:
         super().__init__()
         self.extraction_fct = extraction_fct
-        self._input_aliases = default_input_aliases
+        self.fct_params = fct_params
 
     def _execute(self, *args) -> Any:
         """Extract the data
@@ -361,12 +359,21 @@ class FunctionExtractor(AbstractExtractor):
         :returns: The extracted data
         :rtype: Any
         """
-        data = self.extraction_fct(*args)
+        data = self.extraction_fct(**self.fct_params)
         return data
 
     @property
     def signature(self):
         return signature(self.extraction_fct)
+
+    # Need to test input aliases on the fct_params
+    def _validate_input_aliases(self) -> None:
+        expected_n_params = len(self.signature.parameters.values())
+        actual_n_params = len(self.fct_params)  # Only difference from super()
+        if not expected_n_params == actual_n_params:
+            raise ValidationException(
+                f"EtlStep {type(self)} expects {expected_n_params} input aliases, but {actual_n_params} given"
+            )
 
 
 class SimpleDataValidationSideEffect(AbstractSideEffect):
