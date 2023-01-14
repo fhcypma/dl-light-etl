@@ -255,6 +255,32 @@ def test_etl_job_run(caplog: LogCaptureFixture):
     assert "Int is: 6" in caplog.text
 
 
+def test_etl_job_no_spark():
+    # Given a job
+    job = EtlJob(
+        steps=[
+            IntGenerator(1).alias("a"),
+            LogIntTransformer().on_alias("a"),
+        ],
+    )
+    # When the job does not contain ant SparkEtlSteps
+    # Then the job does not need a SparkSession
+    assert not job.requires_spark_session()
+
+
+def test_etl_job_no_spark():
+    # Given a job
+    job = EtlJob(
+        steps=[
+            IntGenerator(1).alias("a"),
+            LogIntTransformer().on_alias("a"),
+        ],
+    )
+    # When the job does not contain ant SparkEtlSteps
+    # Then the job does not need a SparkSession
+    assert not job.requires_spark_session()
+
+
 def test_etl_job_validate(caplog: LogCaptureFixture):
     # Given a correct job
     job = EtlJob(

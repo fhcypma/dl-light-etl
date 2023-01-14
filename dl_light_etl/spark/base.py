@@ -20,14 +20,21 @@ from dl_light_etl.base import (
     SimpleDataValidationSideEffect,
 )
 from dl_light_etl.errors import DataException
-from dl_light_etl.utils.spark_util import create_spark_session
+
+
+class SparkDriven:
+    """Fixing EtlSteps that require a SparkSession"""
+
+    def requires_spark_session(self) -> bool:
+        return True
+
 
 ##############
 # Extractors #
 ##############
 
 
-class AbstractDataFrameExtractor(AbstractExtractor):
+class AbstractDataFrameExtractor(SparkDriven, AbstractExtractor):
     """Abstract class for DataFrame extractor"""
 
     @abstractmethod
@@ -101,7 +108,7 @@ class ParquetExtractor(DataFrameExtractor):
 ################
 
 
-class AbstractDataFrameTransformer(AbstractTransformer):
+class AbstractDataFrameTransformer(SparkDriven, AbstractTransformer):
     """Abstract class for DataFrame transformer"""
 
     @abstractmethod
@@ -152,6 +159,12 @@ class FilterTransformer(AbstractDataFrameTransformer):
 ###########
 
 
+class AbstractDataFrameLoader(SparkDriven, AbstractLoader):
+    """Abstract class for DataFrame loader"""
+
+    pass
+
+
 class ParquetLoader(AbstractLoader):
     def __init__(
         self,
@@ -183,21 +196,7 @@ class ParquetLoader(AbstractLoader):
 ################
 
 
-SPARK_CONFIG = "spark_config"
-
-
-class GetOrCreateSparkSession(AbstractSideEffect):
-    def __init__(self) -> None:
-        super().__init__(default_input_aliases=[SPARK_CONFIG])
-
-    def _execute(self, spark_config: dict) -> None:
-        create_spark_session(
-            log_level=spark_config.get("log_level"),
-            config=spark_config,
-        )
-
-
-class RecordCountValidationSideEffect(SimpleDataValidationSideEffect):
+class RecordCountValidationSideEffect(SparkDriven, SimpleDataValidationSideEffect):
     """Validate data on having exact expected_count records"""
 
     def __init__(self, expected_count: int) -> None:
@@ -211,7 +210,7 @@ class RecordCountValidationSideEffect(SimpleDataValidationSideEffect):
         super().__init__(validation_fct=validate_input_data)
 
 
-class LogDataSideEffect(AbstractSideEffect):
+class LogDataSideEffect(SparkDriven, AbstractSideEffect):
     """Prints the contents of the DataFrame
 
     Used for debugging purposes

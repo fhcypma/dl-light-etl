@@ -57,7 +57,10 @@ def test_csv_join_to_parquet_spark_job(
             ),
         ],
     )
-    # When the job is ran
+    # When the job contains SparkDriven steps
+    # Then the job quires a SparkSession
+    assert job.requires_spark_session()
+    # And when the job is ran
     # Then there should not be an exception
     with caplog.at_level(logging.INFO):
         job.run()
