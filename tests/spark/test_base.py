@@ -1,13 +1,12 @@
 from pathlib import Path
-import pytest
-from pytest import LogCaptureFixture
 
+import pytest
 from pyspark.sql import Row, SparkSession
 from pyspark.sql.functions import col
 from pyspark.sql.types import StringType, StructField, StructType
+from pytest import LogCaptureFixture
 
 from dl_light_etl.spark.base import *
-
 
 ##############
 # Extractors #

@@ -22,7 +22,6 @@ from dl_light_etl.base import (
 from dl_light_etl.errors import DataException
 from dl_light_etl.utils.spark_util import create_spark_session
 
-
 ##############
 # Extractors #
 ##############
@@ -138,7 +137,7 @@ class SelectTransformer(AbstractDataFrameTransformer):
 
 
 class FilterTransformer(AbstractDataFrameTransformer):
-    """Filter on (a) column(s)"""
+    """Static filter on (a) column(s)"""
 
     def __init__(self, condition: Union[Column, str]) -> None:
         super().__init__()

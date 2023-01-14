@@ -8,9 +8,9 @@ from typing import Any, List, Optional
 from dl_light_etl.errors import ValidationException
 from dl_light_etl.types import DummyContext, EtlContext
 
-DEFAULT_DATA_KEY = "final_df"
-RUN_DATE = "dl_run_date"
-RUN_TIME = "dl_run_time"
+DEFAULT_DATA_KEY = "df"
+RUN_DATE = "run_date"
+RUN_TIME = "run_time"
 PROTECTED_KEYS = [RUN_DATE, RUN_TIME]
 
 
@@ -223,13 +223,18 @@ class CompositeEtlStep(EtlStep):
             return output_context
 
 
-class EtlJob(CompositeEtlStep):
-    """Etl Job. Execute with validate_and_run()"""
+class EtlJob:
+    """Etl Job. Execute with run()
 
-    def __init__(self, *steps: EtlStep) -> None:
-        super().__init__(*steps)
+    Constructor takes the EtlSteps
+    All other (named) arguments are used as the initial EtlContext
+    """
 
-    def validate(self, context: EtlContext = {}) -> None:
+    def __init__(self, steps: List[EtlStep], **kwargs) -> None:
+        self.steps = CompositeEtlStep(*steps)
+        self.context = kwargs
+
+    def validate(self) -> None:
         """Validate the job, passing the context as input
 
         A common context would be
@@ -237,30 +242,33 @@ class EtlJob(CompositeEtlStep):
         """
 
         logging.info("Validating job")
-        dummy_context: DummyContext = {key: type(val) for key, val in context.items()}
-        super().validate(dummy_context)
+        dummy_context: DummyContext = {
+            key: type(val) for key, val in self.context.items()
+        }
+        self.steps.validate(dummy_context)
         logging.info("Validation ok")
 
-    def run(self, context: EtlContext = {}) -> None:
+    def run(self) -> None:
         """Validate and run this job, passing the contexte as input
 
         A common context would be
         context=(RUN_DATE: run_date}
         """
 
-        self.validate(context)
+        self.validate()
         logging.info("Starting job")
-        super().process(context)
+        logging.debug(f"Context: {self.context}")
+        self.steps.process(self.context)
         logging.info("Job completed")
 
 
 class TimedEtlJob(EtlJob):
     """Etl Job with JOB_START_TIME set"""
 
-    def __init__(self, context: EtlContext, *steps: EtlStep) -> None:
+    def __init__(self, steps: List[EtlStep], **kwargs) -> None:
         all_steps = [SetJobStartTime()] + list(steps) + [LogDurationSideEffect()]
 
-        super().__init__(context, *all_steps)
+        super().__init__(steps=all_steps, **kwargs)
 
 
 #####################

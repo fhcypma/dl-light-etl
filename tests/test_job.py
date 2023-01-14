@@ -37,29 +37,30 @@ def test_csv_join_to_parquet_spark_job(
     # And a job that joins the data and writes it to parquet
     out_dir_path = rand_dir_path / "out"
     job = TimedEtlJob(
-        CsvExtractor(
-            input_path=in_file_path1,
-            header="true",
-        ).alias("data"),
-        CsvExtractor(
-            input_path=in_file_path2,
-            header="true",
-        ).alias("lookup"),
-        AddTechnicalFieldsTransformer()
-        .on_aliases("data", JOB_START_TIME)
-        .alias("data_enriched"),
-        JoinTransformer(on="id").on_aliases("data_enriched", "lookup"),
-        ParquetLoader(
-            mode="overwrite",
-            output_path=out_dir_path,
-        ),
+        run_date=date(2022, 1, 1),
+        steps=[
+            CsvExtractor(
+                input_path=in_file_path1,
+                header="true",
+            ).alias("data"),
+            CsvExtractor(
+                input_path=in_file_path2,
+                header="true",
+            ).alias("lookup"),
+            AddTechnicalFieldsTransformer()
+            .on_aliases("data", JOB_START_TIME)
+            .alias("data_enriched"),
+            JoinTransformer(on="id").on_aliases("data_enriched", "lookup"),
+            ParquetLoader(
+                mode="overwrite",
+                output_path=out_dir_path,
+            ),
+        ],
     )
-    # And a context holding the run_date
-    context = {RUN_DATE: date(2022, 1, 1)}
     # When the job is ran
     # Then there should not be an exception
     with caplog.at_level(logging.INFO):
-        job.run(context)
+        job.run()
     # And there should be a parquet filecreated
     out_files = list(out_dir_path.glob("*.parquet"))
     assert len(out_files) == 1
@@ -92,8 +93,10 @@ def test_incorrect_key_fail(rand_path: Path):
         return ["hello", "world"]
 
     job = EtlJob(
-        FunctionExtractor(generate_data).alias("foo"),
-        TextFileLoader(rand_path).on_alias("bar"),
+        steps=[
+            FunctionExtractor(generate_data).alias("foo"),
+            TextFileLoader(rand_path).on_alias("bar"),
+        ]
     )
     # When the job is validated
     # Then an exception should be thrown

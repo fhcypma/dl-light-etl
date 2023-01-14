@@ -240,11 +240,13 @@ def test_composite_etl_step_validate():
 def test_etl_job_run(caplog: LogCaptureFixture):
     # Given a job
     job = EtlJob(
-        IntGenerator(1).alias("a"),
-        IntGenerator(2).alias("b"),
-        IntGenerator(3).alias("c"),
-        AddThreeIntsTransformer(),
-        LogIntTransformer().on_alias("out"),
+        steps=[
+            IntGenerator(1).alias("a"),
+            IntGenerator(2).alias("b"),
+            IntGenerator(3).alias("c"),
+            AddThreeIntsTransformer(),
+            LogIntTransformer().on_alias("out"),
+        ],
     )
     # When the job is processed
     with caplog.at_level(logging.INFO):
@@ -256,11 +258,13 @@ def test_etl_job_run(caplog: LogCaptureFixture):
 def test_etl_job_validate(caplog: LogCaptureFixture):
     # Given a correct job
     job = EtlJob(
-        IntGenerator(1).alias("a"),
-        IntGenerator(2).alias("b"),
-        IntGenerator(3).alias("c"),
-        AddThreeIntsTransformer(),
-        LogIntTransformer().on_alias("out"),
+        steps=[
+            IntGenerator(1).alias("a"),
+            IntGenerator(2).alias("b"),
+            IntGenerator(3).alias("c"),
+            AddThreeIntsTransformer(),
+            LogIntTransformer().on_alias("out"),
+        ],
     )
     # When the job is validated
     # Then no exception should be raised
@@ -280,10 +284,12 @@ def test_etl_job_validate(caplog: LogCaptureFixture):
 def test_etl_job_validate_fail():
     # Given a correct job
     job = EtlJob(
-        IntGenerator(1).alias("a"),
-        IntGenerator(2).alias("wrong!"),
-        AddTwoIntsTransformer(),
-        LogIntTransformer().on_alias("out"),
+        steps=[
+            IntGenerator(1).alias("a"),
+            IntGenerator(2).alias("wrong!"),
+            AddTwoIntsTransformer(),
+            LogIntTransformer().on_alias("out"),
+        ],
     )
     # When the job is validated
     # Then an exception should be raised
