@@ -22,19 +22,12 @@ from dl_light_etl.base import (
 from dl_light_etl.errors import DataException
 
 
-class SparkDriven:
-    """Fixing EtlSteps that require a SparkSession"""
-
-    def requires_spark_session(self) -> bool:
-        return True
-
-
 ##############
 # Extractors #
 ##############
 
 
-class AbstractDataFrameExtractor(SparkDriven, AbstractExtractor):
+class AbstractDataFrameExtractor(AbstractExtractor):
     """Abstract class for DataFrame extractor"""
 
     @abstractmethod
@@ -108,7 +101,7 @@ class ParquetExtractor(DataFrameExtractor):
 ################
 
 
-class AbstractDataFrameTransformer(SparkDriven, AbstractTransformer):
+class AbstractDataFrameTransformer(AbstractTransformer):
     """Abstract class for DataFrame transformer"""
 
     @abstractmethod
@@ -159,7 +152,7 @@ class FilterTransformer(AbstractDataFrameTransformer):
 ###########
 
 
-class AbstractDataFrameLoader(SparkDriven, AbstractLoader):
+class AbstractDataFrameLoader(AbstractLoader):
     """Abstract class for DataFrame loader"""
 
     pass
@@ -196,7 +189,7 @@ class ParquetLoader(AbstractLoader):
 ################
 
 
-class RecordCountValidationSideEffect(SparkDriven, SimpleDataValidationSideEffect):
+class RecordCountValidationSideEffect(SimpleDataValidationSideEffect):
     """Validate data on having exact expected_count records"""
 
     def __init__(self, expected_count: int) -> None:
@@ -210,7 +203,7 @@ class RecordCountValidationSideEffect(SparkDriven, SimpleDataValidationSideEffec
         super().__init__(validation_fct=validate_input_data)
 
 
-class LogDataSideEffect(SparkDriven, AbstractSideEffect):
+class LogDataSideEffect(AbstractSideEffect):
     """Prints the contents of the DataFrame
 
     Used for debugging purposes

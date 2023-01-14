@@ -155,9 +155,6 @@ class EtlStep:
                 f"EtlStep {type(self)} has output, but no alias was set"
             )
 
-    def requires_spark_session(self) -> bool:
-        return False
-
 
 class CompositeEtlStep(EtlStep):
     """Wrapper for several EtlSteps bundled together
@@ -225,9 +222,6 @@ class CompositeEtlStep(EtlStep):
             output_context[self._output_alias] = new_context[self._output_alias]
             return output_context
 
-    def requires_spark_session(self) -> bool:
-        return any(map(lambda x: x.requires_spark_session(), self.etl_steps))
-
 
 class EtlJob:
     """Etl Job. Execute with run()
@@ -266,9 +260,6 @@ class EtlJob:
         logging.debug(f"Context: {self.context}")
         self.steps.process(self.context)
         logging.info("Job completed")
-
-    def requires_spark_session(self) -> bool:
-        return self.steps.requires_spark_session()
 
 
 class TimedEtlJob(EtlJob):
