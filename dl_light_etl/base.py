@@ -237,7 +237,7 @@ class EtlJob:
     """
 
     def __init__(self, steps: List[EtlStep], **kwargs) -> None:
-        self.steps = CompositeEtlStep(*steps)
+        self.steps = CompositeEtlStep(*steps, default_input_aliases=kwargs.keys())
         self.context = kwargs
 
     def validate(self) -> None:
