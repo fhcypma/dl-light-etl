@@ -294,11 +294,11 @@ def test_etl_job_validate_fail():
 
 def test_function_extractor():
     # Given a function that returns a string
-    def greet(addressee: str) -> List[str]:
-        return ["hello", addressee]
+    def greet() -> List[str]:
+        return ["hello", "world"]
 
     # When the function is wrapped in an extractor and the data is extracted
-    extractor = FunctionExtractor(greet, addressee="world").alias("out")
+    extractor = FunctionExtractor(greet).alias("out")
     output_context = extractor.process({})
     # Then the data should come from the function
     assert output_context["out"] == ["hello", "world"]
@@ -306,11 +306,11 @@ def test_function_extractor():
 
 def test_function_extractor_validate():
     # Given a function that returns a string
-    def greet(addressee: str) -> List[str]:
-        return ["hello", addressee]
+    def greet() -> List[str]:
+        return ["hello", "world"]
 
     # When the function is wrapped in an extractor and the data is extracted
-    extractor = FunctionExtractor(greet, addressee="world").alias("out")
+    extractor = FunctionExtractor(greet).alias("out")
     output_context = extractor.validate({})
     # Then the data should come from the function
     assert output_context["out"] == List[str]
